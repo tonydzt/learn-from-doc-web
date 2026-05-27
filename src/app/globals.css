@@ -192,8 +192,9 @@ h3 {
 
 .store-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 1.05rem;
 }
 
 .button {
@@ -229,9 +230,32 @@ h3 {
   font-size: 1rem;
 }
 
-.button--secondary {
-  background: rgba(251, 248, 241, 0.65);
+.store-link {
+  position: relative;
   color: var(--ink-soft);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 3.1rem;
+  transition: color 180ms ease;
+}
+
+.store-link::after {
+  position: absolute;
+  right: 0;
+  bottom: 0.76rem;
+  left: 0;
+  height: 1px;
+  background: rgba(82, 99, 107, 0.38);
+  content: "";
+  transition: background 180ms ease;
+}
+
+.store-link:hover {
+  color: var(--teal-deep);
+}
+
+.store-link:hover::after {
+  background: var(--teal);
 }
 
 .button:hover {
@@ -716,7 +740,21 @@ figcaption {
   }
 
   .store-actions .button {
+    flex: 0 0 100%;
     width: 100%;
+  }
+
+  .store-actions {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .store-link {
+    line-height: 2.7rem;
+  }
+
+  .store-link::after {
+    bottom: 0.62rem;
   }
 
   .hero-art {

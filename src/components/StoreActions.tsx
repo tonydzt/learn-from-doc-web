@@ -11,11 +11,11 @@ export function StoreActions({ compact = false }: StoreActionsProps) {
         Add to Chrome
         <span aria-hidden="true">+</span>
       </a>
-      <a className="button button--secondary" href={storeLinks.edge}>
-        Get for Edge
+      <a className="store-link" href={storeLinks.edge}>
+        Edge
       </a>
-      <a className="button button--secondary" href={storeLinks.firefox}>
-        Get for Firefox
+      <a className="store-link" href={storeLinks.firefox}>
+        Firefox
       </a>
     </div>
   );

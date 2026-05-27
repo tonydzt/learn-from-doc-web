@@ -4,6 +4,7 @@ out/
 coverage/
 *.tsbuildinfo
 .playwright-cli/
+.superpowers/
 .DS_Store
 *.log
 .env*

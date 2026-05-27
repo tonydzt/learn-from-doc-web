@@ -18,10 +18,15 @@ describe("LandingPage", () => {
     screen.getAllByRole("link", { name: /add to chrome/i }).forEach((link) => {
       expect(link).toHaveAttribute("href", storeLinks.chrome);
     });
-    screen.getAllByRole("link", { name: /get for edge/i }).forEach((link) => {
+    const edgeLinks = screen.getAllByRole("link", { name: /^edge$/i });
+    const firefoxLinks = screen.getAllByRole("link", { name: /^firefox$/i });
+
+    expect(edgeLinks).toHaveLength(2);
+    expect(firefoxLinks).toHaveLength(2);
+    edgeLinks.forEach((link) => {
       expect(link).toHaveAttribute("href", storeLinks.edge);
     });
-    screen.getAllByRole("link", { name: /get for firefox/i }).forEach((link) => {
+    firefoxLinks.forEach((link) => {
       expect(link).toHaveAttribute("href", storeLinks.firefox);
     });
   });
