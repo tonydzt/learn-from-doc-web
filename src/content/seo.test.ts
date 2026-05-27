@@ -20,6 +20,12 @@ describe("SEO output", () => {
     ]);
   });
 
+  it("includes Google Search Console site verification metadata", () => {
+    expect(createMetadata(siteUrl).verification?.google).toBe(
+      "OHhRUmEknnx37dhrMP4cothmsP77u2TNhzuQekHDRQ4",
+    );
+  });
+
   it("builds crawl configuration from the same public URL", () => {
     expect(createSitemap(siteUrl)).toEqual([
       expect.objectContaining({ url: siteUrl }),

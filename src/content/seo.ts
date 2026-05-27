@@ -7,6 +7,9 @@ export function createMetadata(siteUrl: string): Metadata {
     metadataBase: new URL(siteUrl),
     title: `${product.name} | Track developer docs reading progress`,
     description: product.description,
+    verification: {
+      google: "OHhRUmEknnx37dhrMP4cothmsP77u2TNhzuQekHDRQ4",
+    },
     alternates: {
       canonical: siteUrl,
     },
