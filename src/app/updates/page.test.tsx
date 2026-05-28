@@ -17,8 +17,8 @@ describe("UpdatesPage", () => {
     const release = screen.getByRole("article", { name: /v0\.1\.0/i });
     expect(within(release).getByText(/2026-05-28/i)).toBeInTheDocument();
     expect(within(release).getByRole("heading", { name: "Added" })).toBeInTheDocument();
-    expect(within(release).getByRole("heading", { name: "Improved" })).toBeInTheDocument();
-    expect(within(release).getByRole("heading", { name: "Fixed" })).toBeInTheDocument();
+    expect(within(release).queryByRole("heading", { name: "Improved" })).toBeNull();
+    expect(within(release).queryByRole("heading", { name: "Fixed" })).toBeNull();
     expect(
       within(release).getByText(/create a local documentation index/i),
     ).toBeInTheDocument();

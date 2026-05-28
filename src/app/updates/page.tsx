@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { product, storeLinks } from "@/content/site";
-import { productUpdates } from "@/content/updates";
+import { productUpdates, type UpdateCategory } from "@/content/updates";
 import { StoreActions } from "@/components/StoreActions";
 
 export const metadata: Metadata = {
@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description:
     "Release notes for Developer Docs Progress Tracker, including new features, improvements, and fixes.",
 };
+
+const updateCategories: UpdateCategory[] = ["Added", "Improved", "Fixed"];
 
 export default function UpdatesPage() {
   return (
@@ -62,16 +64,24 @@ export default function UpdatesPage() {
               </div>
               <p>{update.summary}</p>
               <div className="update-groups">
-                {(["Added", "Improved", "Fixed"] as const).map((category) => (
-                  <section key={category} aria-labelledby={`${update.version}-${category}`}>
-                    <h3 id={`${update.version}-${category}`}>{category}</h3>
-                    <ul>
-                      {update.items[category].map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </section>
-                ))}
+                {updateCategories.map((category) => {
+                  const items = update.items[category];
+
+                  if (!items?.length) {
+                    return null;
+                  }
+
+                  return (
+                    <section key={category} aria-labelledby={`${update.version}-${category}`}>
+                      <h3 id={`${update.version}-${category}`}>{category}</h3>
+                      <ul>
+                        {items.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </section>
+                  );
+                })}
               </div>
             </article>
           ))}

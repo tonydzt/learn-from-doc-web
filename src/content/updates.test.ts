@@ -9,15 +9,14 @@ describe("productUpdates", () => {
     expect(latestUpdate.title).toBe("Initial public release");
   });
 
-  it("groups the initial release into added, improved, and fixed sections", () => {
+  it("keeps all initial release notes under added features", () => {
     expect(latestUpdate.items.Added).toContain(
       "Create a local documentation index from supported docs sites.",
     );
-    expect(latestUpdate.items.Improved).toContain(
+    expect(latestUpdate.items.Added).toContain(
       "Built-in support covers React Docs, Playwright Docs, and OpenAI Codex Docs.",
     );
-    expect(latestUpdate.items.Fixed).toEqual([
-      "No separate fixes are listed for the initial public release.",
-    ]);
+    expect(latestUpdate.items.Improved).toBeUndefined();
+    expect(latestUpdate.items.Fixed).toBeUndefined();
   });
 });
