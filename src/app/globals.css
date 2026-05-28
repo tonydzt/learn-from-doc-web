@@ -471,6 +471,154 @@ h3 {
   height: auto;
 }
 
+.latest-update {
+  padding-block: clamp(2.5rem, 5vw, 4.4rem);
+  border-top: 1px solid var(--line);
+}
+
+.latest-update-card {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.62fr) minmax(320px, 1fr);
+  gap: clamp(1.7rem, 4vw, 3rem);
+  border: 1px solid rgba(17, 124, 119, 0.22);
+  border-radius: var(--radius);
+  background: rgba(251, 248, 241, 0.72);
+  padding: clamp(1.55rem, 3vw, 2.25rem);
+}
+
+.latest-update-card h2 {
+  font-size: clamp(1.9rem, 3vw, 2.5rem);
+  line-height: 1.15;
+}
+
+.update-date {
+  margin-top: 0.85rem;
+  color: var(--teal-deep);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.latest-update-copy {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.latest-update-copy ul {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--ink-soft);
+}
+
+.latest-update-copy li {
+  line-height: 1.55;
+}
+
+.text-link {
+  justify-self: start;
+  color: var(--teal-deep);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: color 180ms ease;
+}
+
+.text-link:hover {
+  color: var(--ink);
+}
+
+.updates-hero {
+  max-width: 820px;
+  padding-block: clamp(4rem, 8vw, 7rem) clamp(2rem, 5vw, 3.4rem);
+}
+
+.updates-hero h1 {
+  font-size: clamp(3rem, 5vw, 4.35rem);
+  line-height: 1.04;
+}
+
+.updates-hero p:not(.eyebrow) {
+  max-width: 610px;
+  margin-top: 1.35rem;
+  font-size: 1.04rem;
+}
+
+.updates-list {
+  display: grid;
+  gap: 1.35rem;
+  padding-bottom: clamp(3.6rem, 7vw, 6.2rem);
+}
+
+.update-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(251, 248, 241, 0.68);
+  padding: clamp(1.55rem, 3vw, 2.25rem);
+}
+
+.update-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.1rem;
+}
+
+.update-version {
+  margin-bottom: 0.45rem;
+  color: var(--teal);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.update-card h2 {
+  font-size: clamp(1.9rem, 3vw, 2.55rem);
+  line-height: 1.15;
+}
+
+.update-card time {
+  flex-shrink: 0;
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.update-groups {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.8rem;
+}
+
+.update-groups section {
+  border-top: 2px solid var(--teal-soft);
+  padding-top: 1rem;
+}
+
+.update-groups h3 {
+  margin-bottom: 0.75rem;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.update-groups ul {
+  display: grid;
+  gap: 0.66rem;
+  margin: 0;
+  padding-left: 1.05rem;
+  color: var(--ink-soft);
+}
+
+.update-groups li {
+  line-height: 1.55;
+}
+
 figcaption {
   border-top: 1px solid var(--line);
   padding: 0.72rem 0.85rem;
@@ -704,6 +852,14 @@ figcaption {
     justify-content: flex-start;
     margin-top: 2.3rem;
   }
+
+  .latest-update-card {
+    grid-template-columns: 1fr;
+  }
+
+  .update-groups {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 780px) {
@@ -792,6 +948,15 @@ figcaption {
 
   .proof-grid {
     grid-template-columns: 1fr 104px;
+  }
+
+  .update-card-header {
+    display: block;
+  }
+
+  .update-card time {
+    display: inline-block;
+    margin-top: 0.8rem;
   }
 
   .faq-grid article:nth-child(odd) {

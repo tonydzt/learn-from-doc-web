@@ -9,6 +9,7 @@ import {
   product,
   storeLinks,
 } from "@/content/site";
+import { latestUpdate } from "@/content/updates";
 import { StoreActions } from "./StoreActions";
 
 export function LandingPage() {
@@ -26,6 +27,7 @@ export function LandingPage() {
           <div className="nav-links">
             <a href="#how-it-works">How it works</a>
             <a href="#supported-docs">Supported docs</a>
+            <Link href="/updates">Updates</Link>
             <a href="#faq">FAQ</a>
           </div>
           <a className="nav-cta" href={storeLinks.chrome}>
@@ -121,6 +123,29 @@ export function LandingPage() {
               />
               <figcaption>Index summary in the browser toolbar</figcaption>
             </figure>
+          </div>
+        </section>
+
+        <section className="latest-update wrap" aria-labelledby="latest-update-title">
+          <div className="latest-update-card">
+            <div>
+              <p className="eyebrow">Latest update</p>
+              <h2 id="latest-update-title">What&apos;s new in v{latestUpdate.version}</h2>
+              <p className="update-date">
+                {latestUpdate.date} · {latestUpdate.title}
+              </p>
+            </div>
+            <div className="latest-update-copy">
+              <p>{latestUpdate.summary}</p>
+              <ul>
+                {latestUpdate.items.Added.slice(0, 3).map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <Link className="text-link" href="/updates">
+                View all updates
+              </Link>
+            </div>
           </div>
         </section>
 

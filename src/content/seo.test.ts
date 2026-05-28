@@ -29,6 +29,7 @@ describe("SEO output", () => {
   it("builds crawl configuration from the same public URL", () => {
     expect(createSitemap(siteUrl)).toEqual([
       expect.objectContaining({ url: siteUrl }),
+      expect.objectContaining({ url: `${siteUrl}/updates` }),
     ]);
     expect(createRobots(siteUrl).sitemap).toBe(`${siteUrl}/sitemap.xml`);
   });

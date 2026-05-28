@@ -49,6 +49,11 @@ export function createSitemap(siteUrl: string): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 1,
     },
+    {
+      url: `${siteUrl}/updates`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
   ];
 }
 

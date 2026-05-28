@@ -31,6 +31,26 @@ describe("LandingPage", () => {
     });
   });
 
+  it("links to product updates and summarizes the latest release", () => {
+    render(<LandingPage />);
+
+    expect(screen.getByRole("link", { name: /^updates$/i })).toHaveAttribute(
+      "href",
+      "/updates",
+    );
+    expect(
+      screen.getByRole("heading", { name: /what's new in v0\.1\.0/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/initial public release/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/create a local documentation index/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /view all updates/i })).toHaveAttribute(
+      "href",
+      "/updates",
+    );
+  });
+
   it("distinguishes built-in support from detectable documentation frameworks", () => {
     render(<LandingPage />);
 
