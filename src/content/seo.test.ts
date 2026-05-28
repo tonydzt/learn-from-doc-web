@@ -30,6 +30,7 @@ describe("SEO output", () => {
     expect(createSitemap(siteUrl)).toEqual([
       expect.objectContaining({ url: siteUrl }),
       expect.objectContaining({ url: `${siteUrl}/updates` }),
+      expect.objectContaining({ url: `${siteUrl}/contact` }),
     ]);
     expect(createRobots(siteUrl).sitemap).toBe(`${siteUrl}/sitemap.xml`);
   });

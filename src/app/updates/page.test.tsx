@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { contactEmail } from "@/content/site";
 import UpdatesPage, { metadata } from "./page";
 
 describe("UpdatesPage", () => {
@@ -28,6 +29,25 @@ describe("UpdatesPage", () => {
     render(<UpdatesPage />);
 
     expect(screen.getAllByRole("link", { name: /add to chrome/i })).not.toHaveLength(0);
+  });
+
+  it("links to the contact page from the primary navigation without exposing the email in the footer", () => {
+    render(<UpdatesPage />);
+
+    const nav = screen.getByRole("navigation", { name: /primary navigation/i });
+    const footer = screen.getByRole("contentinfo");
+
+    expect(within(nav).getByRole("link", { name: /contact/i })).toHaveAttribute(
+      "href",
+      "/contact",
+    );
+    expect(
+      within(footer).getByRole("heading", {
+        name: /install the latest version from your browser store/i,
+      }),
+    ).toBeInTheDocument();
+    expect(within(footer).queryByText(contactEmail)).toBeNull();
+    expect(within(footer).queryByRole("link", { name: /contact/i })).toBeNull();
   });
 
   it("exports metadata for the updates page", () => {

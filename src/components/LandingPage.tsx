@@ -7,34 +7,16 @@ import {
   faqs,
   howItWorks,
   product,
-  storeLinks,
 } from "@/content/site";
 import { latestUpdate } from "@/content/updates";
+import { SiteFooter } from "./SiteFooter";
+import { SiteHeader } from "./SiteHeader";
 import { StoreActions } from "./StoreActions";
 
 export function LandingPage() {
   return (
     <div className="site-shell">
-      <header className="site-header">
-        <nav className="nav wrap" aria-label="Primary navigation">
-          <Link className="brand" href="/">
-            <Image src="/icon.svg" width={42} height={42} alt="" priority />
-            <span>
-              <strong>Developer Docs</strong>
-              <small>Progress Tracker</small>
-            </span>
-          </Link>
-          <div className="nav-links">
-            <a href="#how-it-works">How it works</a>
-            <a href="#supported-docs">Supported docs</a>
-            <Link href="/updates">Updates</Link>
-            <a href="#faq">FAQ</a>
-          </div>
-          <a className="nav-cta" href={storeLinks.chrome}>
-            Add to Chrome
-          </a>
-        </nav>
-      </header>
+      <SiteHeader homeAnchors />
 
       <main>
         <section className="hero wrap" aria-label="Introduction">
@@ -224,19 +206,9 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="closing">
-          <div className="wrap closing-inner">
-            <p className="eyebrow">Developer Docs Progress Tracker</p>
-            <h2>Make long documentation paths readable over time.</h2>
-            <StoreActions compact />
-          </div>
-        </section>
       </main>
 
-      <footer className="site-footer wrap">
-        <p>&copy; {new Date().getFullYear()} Developer Docs Progress Tracker</p>
-        <p>Install from Chrome, Edge, or Firefox extension stores.</p>
-      </footer>
+      <SiteFooter title="Make long documentation paths readable over time." />
     </div>
   );
 }

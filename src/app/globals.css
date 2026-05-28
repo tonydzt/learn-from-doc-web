@@ -619,6 +619,37 @@ h3 {
   line-height: 1.55;
 }
 
+.contact-hero {
+  max-width: 820px;
+  padding-block: clamp(4.5rem, 9vw, 8rem);
+}
+
+.contact-hero h1 {
+  max-width: 680px;
+  font-size: clamp(3rem, 5vw, 4.35rem);
+  line-height: 1.04;
+}
+
+.contact-hero p:not(.eyebrow) {
+  max-width: 620px;
+  margin-top: 1.35rem;
+  font-size: 1.04rem;
+}
+
+.contact-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem 1.3rem;
+  margin-top: 2rem;
+}
+
+.contact-actions span {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
 figcaption {
   border-top: 1px solid var(--line);
   padding: 0.72rem 0.85rem;
@@ -759,8 +790,11 @@ figcaption {
 
 .closing {
   border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
   background: var(--paper-deep);
+}
+
+.site-footer {
+  display: block;
 }
 
 .closing-inner {
@@ -786,14 +820,15 @@ figcaption {
   max-width: 390px;
 }
 
-.site-footer {
+.footer-meta {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  border-top: 1px solid rgba(48, 42, 34, 0.12);
   padding-block: 1.65rem;
 }
 
-.site-footer p {
+.footer-meta p {
   font-size: 0.75rem;
 }
 
@@ -964,9 +999,6 @@ figcaption {
     padding-left: clamp(1.5rem, 3vw, 2.25rem);
   }
 
-  .site-footer {
-    display: block;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

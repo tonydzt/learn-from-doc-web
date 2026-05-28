@@ -13,6 +13,8 @@ export const storeLinks = {
     "https://addons.mozilla.org/en-US/firefox/addon/developer-doc-progress-tracker",
 } as const;
 
+export const contactEmail = "douzhitong0215@gmail.com";
+
 export const howItWorks = [
   {
     marker: "01",

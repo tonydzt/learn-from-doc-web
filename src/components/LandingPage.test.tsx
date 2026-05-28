@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { LandingPage } from "./LandingPage";
-import { storeLinks } from "@/content/site";
+import { contactEmail, storeLinks } from "@/content/site";
 
 describe("LandingPage", () => {
   it("presents the verified reading progress positioning and install actions", () => {
@@ -82,5 +82,28 @@ describe("LandingPage", () => {
     expect(
       screen.getByRole("heading", { name: /where is reading progress stored/i }),
     ).toBeInTheDocument();
+  });
+
+  it("links to the contact page from the primary navigation without exposing the email in the footer", () => {
+    render(<LandingPage />);
+
+    const nav = screen.getByRole("navigation", { name: /primary navigation/i });
+    const footer = screen.getByRole("contentinfo");
+
+    expect(within(nav).getByRole("link", { name: /contact/i })).toHaveAttribute(
+      "href",
+      "/contact",
+    );
+    expect(
+      within(footer).getByRole("heading", {
+        name: /make long documentation paths readable over time/i,
+      }),
+    ).toBeInTheDocument();
+    expect(within(footer).getByRole("link", { name: /add to chrome/i })).toHaveAttribute(
+      "href",
+      storeLinks.chrome,
+    );
+    expect(within(footer).queryByText(contactEmail)).toBeNull();
+    expect(within(footer).queryByRole("link", { name: /contact/i })).toBeNull();
   });
 });

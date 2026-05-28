@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 
-import { product, storeLinks } from "@/content/site";
+import { product } from "@/content/site";
 import { productUpdates, type UpdateCategory } from "@/content/updates";
-import { StoreActions } from "@/components/StoreActions";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteHeader } from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: `Product updates | ${product.name}`,
@@ -17,26 +16,7 @@ const updateCategories: UpdateCategory[] = ["Added", "Improved", "Fixed"];
 export default function UpdatesPage() {
   return (
     <div className="site-shell">
-      <header className="site-header">
-        <nav className="nav wrap" aria-label="Primary navigation">
-          <Link className="brand" href="/">
-            <Image src="/icon.svg" width={42} height={42} alt="" priority />
-            <span>
-              <strong>Developer Docs</strong>
-              <small>Progress Tracker</small>
-            </span>
-          </Link>
-          <div className="nav-links">
-            <Link href="/#how-it-works">How it works</Link>
-            <Link href="/#supported-docs">Supported docs</Link>
-            <Link href="/updates">Updates</Link>
-            <Link href="/#faq">FAQ</Link>
-          </div>
-          <a className="nav-cta" href={storeLinks.chrome}>
-            Add to Chrome
-          </a>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main>
         <section className="updates-hero wrap" aria-labelledby="updates-title">
@@ -87,19 +67,9 @@ export default function UpdatesPage() {
           ))}
         </section>
 
-        <section className="closing">
-          <div className="wrap closing-inner">
-            <p className="eyebrow">Developer Docs Progress Tracker</p>
-            <h2>Install the latest version from your browser store.</h2>
-            <StoreActions compact />
-          </div>
-        </section>
       </main>
 
-      <footer className="site-footer wrap">
-        <p>&copy; {new Date().getFullYear()} Developer Docs Progress Tracker</p>
-        <p>Install from Chrome, Edge, or Firefox extension stores.</p>
-      </footer>
+      <SiteFooter title="Install the latest version from your browser store." />
     </div>
   );
 }
