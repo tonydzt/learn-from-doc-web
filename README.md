@@ -34,10 +34,21 @@ SITE_URL=https://your-domain.example npm run build
 to the final HTTPS domain before publishing; it is not required for local
 development.
 
+## Analytics And Search
+
+Google Analytics is enabled only when `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set to
+a GA4 web stream Measurement ID such as `G-XXXXXXXXXX`. Leave it unset for local
+development or builds that should not send traffic data.
+
+The site generates `/robots.txt` and `/sitemap.xml` from `SITE_URL` during the
+production build. After deployment, submit `https://your-domain.example/sitemap.xml`
+in Google Search Console. The existing Google verification meta tag is already
+included in page metadata, so no verification file is required unless Search
+Console asks for a different verification method.
+
 ## Launch Inputs Still Needed
 
 - Replace `public/manager.png` with an all-English manager screenshot before it
   is introduced into the marketing page.
 - Provide the final production domain for `SITE_URL`.
-- Provide a privacy policy or support destination before adding those links or
-  claims to the homepage.
+- Provide a privacy policy before adding privacy claims to the homepage.
