@@ -11,7 +11,7 @@ describe("LandingPage", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: /know where to continue in developer docs/i,
+        name: /keep your place in developer docs/i,
       }),
     ).toBeInTheDocument();
 
@@ -39,11 +39,11 @@ describe("LandingPage", () => {
       "/updates",
     );
     expect(
-      screen.getByRole("heading", { name: /what's new in v0\.1\.0/i }),
+      screen.getByRole("heading", { name: /what's new in v0\.2\.0/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/initial public release/i)).toBeInTheDocument();
+    expect(screen.getByText(/resumable indexing and page-level controls/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/create a local documentation index/i),
+      screen.getByText(/resume interrupted index builds/i),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /view all updates/i })).toHaveAttribute(
       "href",
@@ -78,6 +78,12 @@ describe("LandingPage", () => {
     expect(screen.getAllByText(/local indexeddb database/i)).not.toHaveLength(0);
     expect(
       screen.getByRole("heading", { name: /what progress does the extension track/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /can indexing resume after it stops/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /can i pause or remove page progress/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: /where is reading progress stored/i }),

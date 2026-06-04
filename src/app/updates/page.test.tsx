@@ -5,24 +5,30 @@ import { contactEmail } from "@/content/site";
 import UpdatesPage, { metadata } from "./page";
 
 describe("UpdatesPage", () => {
-  it("renders the initial release with grouped update sections", () => {
+  it("renders the latest release with grouped update sections", () => {
     render(<UpdatesPage />);
 
     expect(
       screen.getByRole("heading", { level: 1, name: /product updates/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /initial public release/i }),
+      screen.getByRole("heading", { name: /resumable indexing and page-level controls/i }),
     ).toBeInTheDocument();
 
-    const release = screen.getByRole("article", { name: /v0\.1\.0/i });
-    expect(within(release).getByText(/2026-05-28/i)).toBeInTheDocument();
+    const release = screen.getByRole("article", { name: /v0\.2\.0/i });
+    expect(within(release).getByText(/2026-06-03/i)).toBeInTheDocument();
     expect(within(release).getByRole("heading", { name: "Added" })).toBeInTheDocument();
-    expect(within(release).queryByRole("heading", { name: "Improved" })).toBeNull();
+    expect(within(release).getByRole("heading", { name: "Improved" })).toBeInTheDocument();
     expect(within(release).queryByRole("heading", { name: "Fixed" })).toBeNull();
     expect(
-      within(release).getByText(/create a local documentation index/i),
+      within(release).getByText(/resume interrupted index builds/i),
     ).toBeInTheDocument();
+  });
+
+  it("keeps the initial public release in version history", () => {
+    render(<UpdatesPage />);
+
+    expect(screen.getByRole("article", { name: /v0\.1\.0/i })).toBeInTheDocument();
   });
 
   it("keeps installation actions available from the updates page", () => {

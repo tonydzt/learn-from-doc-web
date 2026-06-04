@@ -24,9 +24,9 @@ export function LandingPage() {
             <p className="eyebrow">A reading ledger for developer documentation</p>
             <h1>{product.heroTitle}</h1>
             <p className="hero-text">
-              Track the technical pages you have actually seen. Build a local index,
-              reveal visible progress, and return to long documentation paths with
-              context still intact.
+              Track the technical pages you have actually seen. Build or resume a
+              local index, reveal visible progress, and decide when each page should
+              keep recording.
             </p>
             <StoreActions />
             <p className="microcopy">
@@ -83,7 +83,7 @@ export function LandingPage() {
             <h2 id="proof-title">Progress appears where reading happens.</h2>
             <p>
               A document-wide overview sits beside page-level detail, so unfinished
-              material remains visible while you read.
+              material remains visible while you read, pause, or clear page progress.
             </p>
           </div>
           <div className="proof-grid">
@@ -155,7 +155,8 @@ export function LandingPage() {
               <h3>Detectable documentation frameworks</h3>
               <p>
                 Other HTTPS documentation sites can be checked for a supported
-                framework before indexing. Detection does not guarantee every site
+                framework before indexing. Detection can be reused for the same
+                host and document range, but does not guarantee every site
                 implementation.
               </p>
               <ul className="framework-list" aria-label="Detectable documentation frameworks">
@@ -175,13 +176,14 @@ export function LandingPage() {
             </div>
             <div className="local-facts">
               <p>
-                Documentation indexes and reading progress are stored in the
-                extension&apos;s local IndexedDB database. Global settings use browser
-                extension local storage.
+                Documentation indexes, reading progress, site settings, page
+                settings, and index checkpoints are stored in the extension&apos;s local
+                IndexedDB database. Global settings use browser extension local storage.
               </p>
               <p>
                 Import and export are actions you start from the manager page; exported
-                data can optionally include reading progress.
+                data can optionally include reading progress and global application
+                settings.
               </p>
               <small>
                 These are verified product-storage facts, not a substitute for a
