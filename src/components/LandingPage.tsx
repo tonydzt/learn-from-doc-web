@@ -12,6 +12,7 @@ import { latestUpdate } from "@/content/updates";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import { StoreActions } from "./StoreActions";
+import { WaitlistSignup } from "./WaitlistSignup";
 
 export function LandingPage() {
   return (
@@ -129,6 +130,23 @@ export function LandingPage() {
               </Link>
             </div>
           </div>
+        </section>
+
+        <section
+          className="waitlist-section wrap"
+          aria-label="Reserve future features"
+          id="waitlist"
+        >
+          <div className="waitlist-copy">
+            <p className="eyebrow">Coming next</p>
+            <h2>Reserve the next layer.</h2>
+            <p>
+              The next web app work is moving toward accounts, a personal progress
+              dashboard, and cross-device sync. Pick what matters to you and leave
+              an email for a one-time launch notice.
+            </p>
+          </div>
+          <WaitlistSignup />
         </section>
 
         <section

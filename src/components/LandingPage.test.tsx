@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { LandingPage } from "./LandingPage";
@@ -111,5 +111,31 @@ describe("LandingPage", () => {
     );
     expect(within(footer).queryByText(contactEmail)).toBeNull();
     expect(within(footer).queryByRole("link", { name: /contact/i })).toBeNull();
+  });
+
+  it("lets visitors reserve future features with their email and selected interests", () => {
+    render(<LandingPage />);
+
+    const waitlist = screen.getByRole("region", { name: /reserve future features/i });
+
+    expect(
+      within(waitlist).getByRole("heading", { name: /reserve the next layer/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(waitlist).getByRole("checkbox", { name: /user registration and login/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(waitlist).getByRole("checkbox", { name: /personal progress dashboard/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(waitlist).getByRole("checkbox", { name: /cross-device progress sync/i }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(within(waitlist).getByRole("checkbox", { name: /user registration/i }));
+    fireEvent.change(within(waitlist).getByLabelText(/email address/i), {
+      target: { value: "reader@example.com" },
+    });
+
+    expect(within(waitlist).getByRole("button", { name: /reserve updates/i })).toBeEnabled();
   });
 });
