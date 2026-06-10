@@ -46,6 +46,45 @@ in Google Search Console. The existing Google verification meta tag is already
 included in page metadata, so no verification file is required unless Search
 Console asks for a different verification method.
 
+## Email Auth
+
+Account registration and password login use Supabase Auth. Configure these
+values in your local and production environment:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key
+```
+
+In the Supabase dashboard, enable the Email provider, require email confirmation,
+set the production Site URL, and add redirect URLs for
+`http://localhost:3000/auth/confirm` and `https://your-domain.example/auth/confirm`.
+
+Apply `docs/supabase/user-permissions.sql` in the Supabase SQL editor to create
+per-user permission grants for account features. The script installs a signup
+trigger for future accounts created before `2028-01-01T00:00:00Z` and backfills
+`canSync` and `canPullServerData` grants for accounts created before
+`2028-01-01T00:00:00Z`, with each grant expiring three months after the account
+creation time.
+
+Apply `docs/supabase/user-profiles.sql` to create account profiles. New auth
+users receive a random 8-character nickname and a generated circular avatar based
+on their email initial; existing auth users are backfilled by the same script.
+Account deletion uses Supabase Auth admin APIs, so server environments must also
+set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+
+External clients can create a local account session with `POST /api/auth/login`.
+Send JSON `{ "email": "reader@example.com", "password": "password123" }`. A
+successful response includes `accessToken`, `user.id`, `user.email`, optional
+`user.name`, and boolean `permissions.canSync` / `permissions.canPullServerData`.
+Future authenticated APIs should receive that token as
+`Authorization: Bearer <accessToken>`.
+
+Clients can refresh the stored permission state with `GET /api/me/permissions`
+and the same bearer token. A successful response includes boolean
+`permissions.canSync` / `permissions.canPullServerData` and may include updated
+`user` details. Missing or invalid tokens return `401 Unauthorized`.
+
 ## Launch Inputs Still Needed
 
 - Replace `public/manager.png` with an all-English manager screenshot before it

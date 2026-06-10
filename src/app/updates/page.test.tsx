@@ -31,10 +31,10 @@ describe("UpdatesPage", () => {
     expect(screen.getByRole("article", { name: /v0\.1\.0/i })).toBeInTheDocument();
   });
 
-  it("keeps installation actions available from the updates page", () => {
+  it("keeps installation actions out of the updates page chrome", () => {
     render(<UpdatesPage />);
 
-    expect(screen.getAllByRole("link", { name: /add to chrome/i })).not.toHaveLength(0);
+    expect(screen.queryByRole("link", { name: /add to chrome/i })).toBeNull();
   });
 
   it("links to the contact page from the primary navigation without exposing the email in the footer", () => {
@@ -52,6 +52,9 @@ describe("UpdatesPage", () => {
         name: /install the latest version from your browser store/i,
       }),
     ).toBeInTheDocument();
+    expect(within(footer).queryByRole("link", { name: /add to chrome/i })).toBeNull();
+    expect(within(footer).queryByRole("link", { name: /^edge$/i })).toBeNull();
+    expect(within(footer).queryByRole("link", { name: /^firefox$/i })).toBeNull();
     expect(within(footer).queryByText(contactEmail)).toBeNull();
     expect(within(footer).queryByRole("link", { name: /contact/i })).toBeNull();
   });

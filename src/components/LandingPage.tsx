@@ -14,10 +14,20 @@ import { SiteHeader } from "./SiteHeader";
 import { StoreActions } from "./StoreActions";
 import { WaitlistSignup } from "./WaitlistSignup";
 
-export function LandingPage() {
+type LandingPageProps = {
+  signedIn?: boolean;
+  userProfile?: {
+    nickname: string;
+    avatarInitial: string;
+    avatarBackground: string;
+    avatarColor: string;
+  };
+};
+
+export function LandingPage({ signedIn = false, userProfile }: LandingPageProps) {
   return (
     <div className="site-shell">
-      <SiteHeader homeAnchors />
+      <SiteHeader homeAnchors signedIn={signedIn} userProfile={userProfile} />
 
       <main>
         <section className="hero wrap" aria-label="Introduction">

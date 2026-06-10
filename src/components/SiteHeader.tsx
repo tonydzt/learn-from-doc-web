@@ -1,13 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { storeLinks } from "@/content/site";
-
 type SiteHeaderProps = {
   homeAnchors?: boolean;
+  signedIn?: boolean;
+  userProfile?: {
+    nickname: string;
+    avatarInitial: string;
+    avatarBackground: string;
+    avatarColor: string;
+  };
 };
 
-export function SiteHeader({ homeAnchors = false }: SiteHeaderProps) {
+export function SiteHeader({ homeAnchors = false, signedIn = false, userProfile }: SiteHeaderProps) {
   const anchorPrefix = homeAnchors ? "" : "/";
 
   return (
@@ -27,9 +32,28 @@ export function SiteHeader({ homeAnchors = false }: SiteHeaderProps) {
           <Link href="/contact">Contact</Link>
           <Link href={`${anchorPrefix}#faq`}>FAQ</Link>
         </div>
-        <a className="nav-cta" href={storeLinks.chrome}>
-          Add to Chrome
-        </a>
+        <Link
+          aria-label={signedIn && userProfile ? `${userProfile.nickname} account` : undefined}
+          className={signedIn && userProfile ? "nav-avatar-link" : "nav-cta"}
+          href={signedIn ? "/account" : "/login"}
+        >
+          {signedIn && userProfile ? (
+            <span
+              aria-hidden="true"
+              className="user-avatar user-avatar--small"
+              style={{
+                backgroundColor: userProfile.avatarBackground,
+                color: userProfile.avatarColor,
+              }}
+            >
+              {userProfile.avatarInitial}
+            </span>
+          ) : signedIn ? (
+            "Account"
+          ) : (
+            "Sign in"
+          )}
+        </Link>
       </nav>
     </header>
   );

@@ -159,6 +159,37 @@ h3 {
   transform: translateY(-1px);
 }
 
+.nav-avatar-link {
+  display: grid;
+  place-items: center;
+  margin-left: 0.2rem;
+  border-radius: 999px;
+}
+
+.user-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    0 1px 2px rgba(20, 34, 44, 0.16);
+}
+
+.user-avatar--small {
+  width: 2.55rem;
+  height: 2.55rem;
+  font-size: 1rem;
+}
+
+.user-avatar--large {
+  width: 4.25rem;
+  height: 4.25rem;
+  font-size: 1.55rem;
+}
+
 .hero {
   display: grid;
   grid-template-columns: minmax(320px, 0.82fr) minmax(480px, 1.18fr);
@@ -217,6 +248,17 @@ h3 {
 .button--primary {
   border-color: var(--teal);
   background: var(--teal);
+  color: #fffdfa;
+}
+
+.button--secondary {
+  background: #fffdfa;
+  color: var(--ink);
+}
+
+.button--danger {
+  border-color: rgba(155, 57, 41, 0.45);
+  background: #9b3929;
   color: #fffdfa;
 }
 
@@ -863,6 +905,362 @@ h3 {
   font-weight: 700;
 }
 
+.auth-page,
+.account-page {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(360px, 0.72fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+.auth-copy h1,
+.account-page h1 {
+  max-width: 620px;
+  font-size: clamp(3rem, 5vw, 4.35rem);
+  line-height: 1.04;
+}
+
+.auth-copy p:not(.eyebrow),
+.account-page p:not(.eyebrow) {
+  max-width: 560px;
+  margin-top: 1.35rem;
+  font-size: 1.02rem;
+}
+
+.auth-form,
+.account-panel {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid rgba(17, 124, 119, 0.24);
+  border-radius: var(--radius);
+  background: rgba(251, 248, 241, 0.78);
+  box-shadow: 0 16px 44px rgba(20, 34, 44, 0.08);
+  padding: clamp(1.35rem, 2.8vw, 2rem);
+}
+
+.auth-form label,
+.account-panel span {
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-form input {
+  width: 100%;
+  min-height: 3.1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fffdfa;
+  color: var(--ink);
+  font: inherit;
+  padding-inline: 1rem;
+}
+
+.auth-form .button,
+.account-panel .button {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.auth-status {
+  min-height: 1.45rem;
+  font-size: 0.84rem;
+}
+
+.auth-status--success {
+  color: var(--teal-deep);
+  font-weight: 700;
+}
+
+.auth-status--error {
+  color: #9b3929;
+  font-weight: 700;
+}
+
+.auth-switch {
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+  font-size: 0.88rem;
+}
+
+.auth-switch a {
+  color: var(--teal-deep);
+  font-weight: 700;
+}
+
+.account-panel strong {
+  color: var(--ink);
+  font-size: clamp(1.15rem, 2.4vw, 1.45rem);
+  overflow-wrap: anywhere;
+}
+
+.permission-status {
+  border-radius: 999px;
+  background: rgba(17, 124, 119, 0.12);
+  color: var(--teal-deep);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.permission-status.expired {
+  background: rgba(155, 57, 41, 0.1);
+  color: #9b3929;
+}
+
+.account-settings-shell {
+  background: #fbfaf7;
+}
+
+.account-settings {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: calc(100vh - 76px);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.account-settings-sidebar {
+  border-right: 1px solid var(--line);
+  background: #f7f6f2;
+  padding: 1rem 0.75rem;
+}
+
+.account-settings-sidebar h1 {
+  margin: 0 0 1.8rem;
+  padding-inline: 0.85rem;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.account-settings-sidebar nav {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.account-settings-sidebar nav span {
+  margin: 0.85rem 0 0.35rem;
+  padding-inline: 0.85rem;
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account-settings-sidebar a {
+  display: flex;
+  align-items: center;
+  min-height: 2rem;
+  border-radius: 6px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  font-weight: 650;
+  padding-inline: 0.85rem;
+}
+
+.account-settings-sidebar a:hover,
+.account-settings-sidebar a.active {
+  background: rgba(20, 34, 44, 0.08);
+  color: var(--ink);
+}
+
+.account-settings-content {
+  width: min(690px, calc(100% - 2rem));
+  margin-inline: auto;
+  padding-block: clamp(3rem, 6vw, 5rem);
+}
+
+.settings-page-header {
+  margin-bottom: 2.6rem;
+}
+
+.settings-page-header h2 {
+  color: var(--ink);
+  font-size: clamp(1.7rem, 3vw, 2.15rem);
+  line-height: 1.12;
+}
+
+.settings-page-header p {
+  margin-top: 0.45rem;
+  color: var(--ink-soft);
+  font-size: 1rem;
+}
+
+.settings-section {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffdfa;
+  box-shadow: 0 1px 2px rgba(20, 34, 44, 0.05);
+}
+
+.settings-section + .settings-section {
+  margin-top: 2rem;
+}
+
+.settings-section--danger {
+  border-color: rgba(155, 57, 41, 0.24);
+}
+
+.settings-section-header,
+.settings-field-row,
+.settings-action-row,
+.settings-table-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.72fr);
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1.1rem 1rem;
+}
+
+.settings-section-header {
+  align-items: start;
+}
+
+.settings-section-header h3 {
+  color: var(--ink);
+  font-size: 0.98rem;
+}
+
+.settings-section-header p,
+.settings-field-row p {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.settings-field-row,
+.settings-action-row,
+.settings-table-row {
+  border-top: 1px solid var(--line);
+}
+
+.settings-field-row strong,
+.settings-table-row strong {
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.settings-field-row > span {
+  justify-self: end;
+  max-width: 100%;
+  border: 1px solid rgba(20, 34, 44, 0.16);
+  border-radius: 6px;
+  background: #f9f8f5;
+  color: var(--ink);
+  font-size: 0.9rem;
+  padding: 0.48rem 0.65rem;
+  overflow-wrap: anywhere;
+}
+
+.settings-field-row label {
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.settings-field-row--profile {
+  align-items: center;
+}
+
+.settings-field-row--form {
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.settings-nickname-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.72fr);
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.settings-nickname-line input {
+  justify-self: end;
+  width: min(100%, 260px);
+  min-height: 2.35rem;
+  border: 1px solid rgba(20, 34, 44, 0.16);
+  border-radius: 6px;
+  background: #f9f8f5;
+  color: var(--ink);
+  font: inherit;
+  padding-inline: 0.7rem;
+}
+
+.settings-nickname-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-nickname-actions .button {
+  min-height: 2.35rem;
+  padding-inline: 0.9rem;
+}
+
+.profile-avatar-display {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-action-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-action-row .button {
+  width: auto;
+  min-width: 130px;
+  min-height: 2.25rem;
+  padding-inline: 1rem;
+}
+
+.settings-table {
+  border-top: 1px solid var(--line);
+}
+
+.settings-empty-state {
+  border-top: 1px solid var(--line);
+  padding: 1.25rem 1rem;
+}
+
+.settings-empty-state strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.settings-empty-state p {
+  margin-top: 0.25rem;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.settings-table-row {
+  grid-template-columns: minmax(190px, 1fr) minmax(120px, 0.55fr) minmax(90px, 0.3fr);
+}
+
+.settings-table-row > span {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.settings-table-head {
+  border-top: 0;
+  background: #f8f7f3;
+}
+
+.settings-table-head span {
+  color: var(--ink-soft);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 figcaption {
   border-top: 1px solid var(--line);
   padding: 0.72rem 0.85rem;
@@ -1011,10 +1409,6 @@ figcaption {
 }
 
 .closing-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2.5rem;
   padding-block: clamp(3rem, 5vw, 4.5rem);
 }
 
@@ -1026,11 +1420,6 @@ figcaption {
 
 .closing-inner .eyebrow {
   display: none;
-}
-
-.store-actions--compact {
-  justify-content: flex-end;
-  max-width: 390px;
 }
 
 .footer-meta {
@@ -1092,22 +1481,36 @@ figcaption {
     max-width: 590px;
   }
 
-  .closing-inner {
-    display: block;
-  }
-
-  .closing-inner .store-actions {
-    justify-content: flex-start;
-    margin-top: 2.3rem;
-  }
-
   .latest-update-card {
     grid-template-columns: 1fr;
   }
 
   .waitlist-section,
-  .admin-grid {
+  .admin-grid,
+  .auth-page,
+  .account-page {
     grid-template-columns: 1fr;
+  }
+
+  .account-settings {
+    grid-template-columns: 1fr;
+  }
+
+  .account-settings-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .account-settings-sidebar h1 {
+    margin-bottom: 0.8rem;
+  }
+
+  .account-settings-sidebar nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .account-settings-sidebar nav span {
+    grid-column: 1 / -1;
   }
 
   .update-groups {
@@ -1228,6 +1631,59 @@ figcaption {
     padding-left: clamp(1.5rem, 3vw, 2.25rem);
   }
 
+  .account-settings-content {
+    width: min(100% - 2rem, 590px);
+    padding-block: 2.4rem;
+  }
+
+  .settings-section-header,
+  .settings-field-row,
+  .settings-table-row {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .settings-field-row > span {
+    justify-self: start;
+  }
+
+  .settings-nickname-line {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .settings-nickname-line input {
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .profile-avatar-display {
+    justify-content: flex-start;
+  }
+
+  .settings-nickname-actions {
+    justify-content: stretch;
+  }
+
+  .settings-nickname-actions .button {
+    width: 100%;
+  }
+
+  .settings-action-row {
+    justify-content: stretch;
+  }
+
+  .settings-action-row .button {
+    width: 100%;
+  }
+
+  .settings-table-head {
+    display: none;
+  }
+
+  .settings-table-row > span:last-child {
+    margin-top: 0.2rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
