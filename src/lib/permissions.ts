@@ -8,18 +8,19 @@ export type PermissionStatus = {
 export type UserPermissions = {
   canSync: PermissionStatus;
   canPullServerData: PermissionStatus;
+  canTestSystemIndexes: PermissionStatus;
 };
 
 export type PermissionGrantRow = {
   permission_key: string;
   starts_at: string;
-  expires_at: string;
+  expires_at: string | null;
 };
 
 type ServerSupabaseClient = Awaited<ReturnType<typeof createServerSupabaseClient>>;
 type PermissionKey = keyof UserPermissions;
 
-const permissionKeys: PermissionKey[] = ["canSync", "canPullServerData"];
+const permissionKeys: PermissionKey[] = ["canSync", "canPullServerData", "canTestSystemIndexes"];
 
 const inactivePermission: PermissionStatus = {
   active: false,
@@ -49,6 +50,7 @@ export function resolveUserPermissions(
   return {
     canSync: resolvePermission("canSync", grants, now),
     canPullServerData: resolvePermission("canPullServerData", grants, now),
+    canTestSystemIndexes: resolvePermission("canTestSystemIndexes", grants, now),
   };
 }
 
@@ -65,9 +67,8 @@ function resolvePermission(
 
   const activeGrants = matchingGrants.filter((grant) => {
     const startsAt = new Date(grant.starts_at);
-    const expiresAt = new Date(grant.expires_at);
 
-    return startsAt <= now && expiresAt > now;
+    return startsAt <= now && (grant.expires_at === null || new Date(grant.expires_at) > now);
   });
 
   const grant = latestExpiryGrant(activeGrants.length > 0 ? activeGrants : matchingGrants);
@@ -84,6 +85,14 @@ function latestExpiryGrant(grants: PermissionGrantRow[]): PermissionGrantRow | u
       return grant;
     }
 
+    if (latestGrant.expires_at === null) {
+      return latestGrant;
+    }
+
+    if (grant.expires_at === null) {
+      return grant;
+    }
+
     return new Date(grant.expires_at) > new Date(latestGrant.expires_at) ? grant : latestGrant;
   }, undefined);
 }
@@ -92,6 +101,7 @@ export function permissionLabels(): Record<PermissionKey, string> {
   return {
     canSync: "Multi-device progress sync",
     canPullServerData: "Pull server index data",
+    canTestSystemIndexes: "Test pending system indexes",
   };
 }
 

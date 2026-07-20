@@ -54,6 +54,7 @@ describe("GET /api/me/permissions", () => {
     getCurrentUserPermissionsMock.mockResolvedValue({
       canSync: { active: true, expiresAt: "2028-01-01T00:00:00.000Z" },
       canPullServerData: { active: false, expiresAt: null },
+      canTestSystemIndexes: { active: true, expiresAt: "2028-01-01T00:00:00.000Z" },
     });
 
     const response = await GET(
@@ -74,6 +75,7 @@ describe("GET /api/me/permissions", () => {
       permissions: {
         canSync: true,
         canPullServerData: false,
+        canTestSystemIndexes: true,
       },
     });
   });

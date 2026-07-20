@@ -4,20 +4,9 @@ import { describe, expect, it } from "vitest";
 import { WaitlistAdminPage } from "./WaitlistAdminPage";
 
 describe("WaitlistAdminPage", () => {
-  it("asks for an admin password when the visitor is not authenticated", () => {
-    render(<WaitlistAdminPage authenticated={false} />);
-
-    expect(
-      screen.getByRole("heading", { name: /waitlist admin/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText(/admin password/i)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /send notification/i })).toBeNull();
-  });
-
   it("shows subscriber stats and the notification form to authenticated admins", () => {
     render(
       <WaitlistAdminPage
-        authenticated
         summary={{
           totalSubscribers: 7,
           featureCounts: {

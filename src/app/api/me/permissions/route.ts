@@ -36,6 +36,7 @@ export async function GET(request: Request) {
       permissions: {
         canSync: permissions.canSync.active,
         canPullServerData: permissions.canPullServerData.active,
+        canTestSystemIndexes: permissions.canTestSystemIndexes.active,
       },
     });
   } catch {

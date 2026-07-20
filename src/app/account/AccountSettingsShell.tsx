@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 
 type AccountSettingsShellProps = {
-  activeSection: "account" | "permissions";
+  activeSection: "account" | "permissions" | "indexes";
   children: ReactNode;
   userProfile?: {
     nickname: string;
@@ -24,6 +24,11 @@ const accountNavItems = [
     id: "permissions",
     label: "Permissions",
     href: "/account/permissions",
+  },
+  {
+    id: "indexes",
+    label: "Indexes",
+    href: "/account/indexes",
   },
 ] as const;
 

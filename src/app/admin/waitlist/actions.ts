@@ -1,31 +1,13 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-import {
-  createAdminSessionCookieValue,
-  verifyAdminPassword,
-  waitlistAdminCookieName,
-} from "@/lib/waitlistAdminAuth";
+import { loginAdmin } from "@/app/admin/actions";
 import { notifyWaitlistSubscribers } from "@/lib/waitlist";
 
 export async function loginWaitlistAdmin(formData: FormData) {
-  const password = String(formData.get("password") ?? "");
-
-  if (!verifyAdminPassword(password)) {
-    return;
-  }
-
-  const cookieStore = await cookies();
-  cookieStore.set(waitlistAdminCookieName, createAdminSessionCookieValue(), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/admin/waitlist",
-    maxAge: 60 * 60 * 12,
-  });
-  revalidatePath("/admin/waitlist");
+  formData.set("returnPath", "/admin/waitlist");
+  await loginAdmin(formData);
 }
 
 export async function sendWaitlistNotification(formData: FormData) {

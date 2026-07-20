@@ -67,6 +67,7 @@ describe("AccountPermissionsPage", () => {
     getCurrentUserPermissionsMock.mockResolvedValue({
       canSync: { active: true, expiresAt: "2026-07-01T00:00:00.000Z" },
       canPullServerData: { active: false, expiresAt: "2018-01-01T00:00:00.000Z" },
+      canTestSystemIndexes: { active: true, expiresAt: "2026-08-01T00:00:00.000Z" },
     });
 
     render(await AccountPermissionsPage());
@@ -79,8 +80,9 @@ describe("AccountPermissionsPage", () => {
 
     const permissionsTable = screen.getByRole("table", { name: /account permissions/i });
     expect(within(permissionsTable).getByText("Multi-device progress sync")).toBeInTheDocument();
+    expect(within(permissionsTable).getByText("Test pending system indexes")).toBeInTheDocument();
     expect(within(permissionsTable).getByText("Jul 1, 2026")).toBeInTheDocument();
-    expect(within(permissionsTable).getByText("Active")).toBeInTheDocument();
+    expect(within(permissionsTable).getAllByText("Active")).toHaveLength(2);
     expect(within(permissionsTable).queryByText("Pull server index data")).not.toBeInTheDocument();
     expect(within(permissionsTable).queryByText("Expired")).not.toBeInTheDocument();
     expect(within(permissionsTable).queryByText("Jan 1, 2018")).not.toBeInTheDocument();
@@ -100,11 +102,36 @@ describe("AccountPermissionsPage", () => {
     getCurrentUserPermissionsMock.mockResolvedValue({
       canSync: { active: false, expiresAt: "2018-01-01T00:00:00.000Z" },
       canPullServerData: { active: false, expiresAt: null },
+      canTestSystemIndexes: { active: false, expiresAt: null },
     });
 
     render(await AccountPermissionsPage());
 
     expect(screen.getByText("No active permissions")).toBeInTheDocument();
     expect(screen.queryByRole("table", { name: /account permissions/i })).not.toBeInTheDocument();
+  });
+
+  it("shows permanent active permissions without an expiry date", async () => {
+    getUserMock.mockResolvedValue({
+      data: { user: { id: "user-1", email: "reader@example.com" } },
+    });
+    getOrCreateUserProfileMock.mockResolvedValue({
+      userId: "user-1",
+      nickname: "Reader01",
+      avatarInitial: "R",
+      avatarBackground: "#174E63",
+      avatarColor: "#F9C846",
+    });
+    getCurrentUserPermissionsMock.mockResolvedValue({
+      canSync: { active: false, expiresAt: null },
+      canPullServerData: { active: true, expiresAt: null },
+      canTestSystemIndexes: { active: true, expiresAt: null },
+    });
+
+    render(await AccountPermissionsPage());
+
+    const permissionsTable = screen.getByRole("table", { name: /account permissions/i });
+    expect(within(permissionsTable).getAllByText("Never")).toHaveLength(2);
+    expect(within(permissionsTable).queryByText("No grant")).not.toBeInTheDocument();
   });
 });

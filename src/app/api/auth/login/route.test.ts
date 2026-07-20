@@ -34,11 +34,15 @@ describe("POST /api/auth/login", () => {
     getOrCreateUserProfileMock.mockReset();
   });
 
-  it("returns an access token, user, and permission booleans after login", async () => {
+  it("returns session tokens, user, and permission booleans after login", async () => {
     const user = { id: "user-1", email: "reader@example.com" };
     signInWithPasswordMock.mockResolvedValue({
       data: {
-        session: { access_token: "access-token-1" },
+        session: {
+          access_token: "access-token-1",
+          refresh_token: "refresh-token-1",
+          expires_at: 1782198578,
+        },
         user,
       },
       error: null,
@@ -53,6 +57,7 @@ describe("POST /api/auth/login", () => {
     getCurrentUserPermissionsMock.mockResolvedValue({
       canSync: { active: true, expiresAt: "2028-01-01T00:00:00.000Z" },
       canPullServerData: { active: false, expiresAt: null },
+      canTestSystemIndexes: { active: true, expiresAt: "2028-01-01T00:00:00.000Z" },
     });
 
     const response = await POST(
@@ -70,6 +75,8 @@ describe("POST /api/auth/login", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       accessToken: "access-token-1",
+      refreshToken: "refresh-token-1",
+      expiresAt: 1782198578,
       user: {
         id: "user-1",
         email: "reader@example.com",
@@ -78,6 +85,7 @@ describe("POST /api/auth/login", () => {
       permissions: {
         canSync: true,
         canPullServerData: false,
+        canTestSystemIndexes: true,
       },
     });
   });

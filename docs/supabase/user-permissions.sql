@@ -1,7 +1,7 @@
 create table if not exists public.user_permission_grants (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  permission_key text not null check (permission_key in ('canSync', 'canPullServerData')),
+  permission_key text not null check (permission_key in ('canSync', 'canPullServerData', 'canTestSystemIndexes')),
   source text not null,
   starts_at timestamptz not null,
   expires_at timestamptz not null,
@@ -9,6 +9,15 @@ create table if not exists public.user_permission_grants (
   constraint user_permission_grants_valid_window check (expires_at > starts_at),
   constraint user_permission_grants_unique_source unique (user_id, permission_key, source)
 );
+
+alter table public.user_permission_grants drop constraint if exists user_permission_grants_permission_key_check;
+alter table public.user_permission_grants add constraint user_permission_grants_permission_key_check
+  check (permission_key in ('canSync', 'canPullServerData', 'canTestSystemIndexes'));
+
+alter table public.user_permission_grants alter column expires_at drop not null;
+alter table public.user_permission_grants drop constraint if exists user_permission_grants_valid_window;
+alter table public.user_permission_grants add constraint user_permission_grants_valid_window
+  check (expires_at is null or expires_at > starts_at);
 
 alter table public.user_permission_grants enable row level security;
 

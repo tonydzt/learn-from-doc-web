@@ -104,7 +104,7 @@ function PermissionList({ permissions }: { permissions: UserPermissions }) {
 
 function formatExpiry(expiresAt: string | null): string {
   if (!expiresAt) {
-    return "No grant";
+    return "Never";
   }
 
   return new Intl.DateTimeFormat("en", {

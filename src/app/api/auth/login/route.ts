@@ -20,7 +20,14 @@ export async function POST(request: Request) {
     const supabase = await createServerSupabaseClient();
     const { data, error } = await supabase.auth.signInWithPassword(validation.value);
 
-    if (error || !data.session?.access_token || !data.user?.id || !data.user.email) {
+    if (
+      error ||
+      !data.session?.access_token ||
+      !data.session.refresh_token ||
+      !data.session.expires_at ||
+      !data.user?.id ||
+      !data.user.email
+    ) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
@@ -31,6 +38,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       accessToken: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+      expiresAt: data.session.expires_at,
       user: {
         id: data.user.id,
         email: data.user.email,
@@ -39,6 +48,7 @@ export async function POST(request: Request) {
       permissions: {
         canSync: permissions.canSync.active,
         canPullServerData: permissions.canPullServerData.active,
+        canTestSystemIndexes: permissions.canTestSystemIndexes.active,
       },
     });
   } catch {

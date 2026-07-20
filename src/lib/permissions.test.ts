@@ -46,6 +46,43 @@ describe("resolveUserPermissions", () => {
 
     expect(permissions.canSync).toEqual({ active: false, expiresAt: null });
     expect(permissions.canPullServerData).toEqual({ active: false, expiresAt: null });
+    expect(permissions.canTestSystemIndexes).toEqual({ active: false, expiresAt: null });
+  });
+
+  it("resolves system index tester grants", () => {
+    const permissions = resolveUserPermissions(
+      [
+        {
+          permission_key: "canTestSystemIndexes",
+          starts_at: "2026-01-01T00:00:00.000Z",
+          expires_at: "2026-07-01T00:00:00.000Z",
+        },
+      ],
+      now,
+    );
+
+    expect(permissions.canTestSystemIndexes).toEqual({
+      active: true,
+      expiresAt: "2026-07-01T00:00:00.000Z",
+    });
+  });
+
+  it("keeps grants without an expiry active", () => {
+    const permissions = resolveUserPermissions(
+      [
+        {
+          permission_key: "canTestSystemIndexes",
+          starts_at: "2026-01-01T00:00:00.000Z",
+          expires_at: null,
+        },
+      ],
+      now,
+    );
+
+    expect(permissions.canTestSystemIndexes).toEqual({
+      active: true,
+      expiresAt: null,
+    });
   });
 
   it("uses an active grant before a later inactive expiry", () => {
