@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { AccountIndexesTabs } from "./AccountIndexesTabs";
@@ -95,48 +95,45 @@ const actions = {
   clearPageProgress: vi.fn(),
   deleteUploadedIndex: vi.fn(),
   submitForReview: vi.fn(),
+  submitSiteForReview: vi.fn(),
   unlinkIndex: vi.fn(),
 };
 
 describe("AccountIndexesTabs", () => {
-  it("shows a compact index list and switches one detail at a time", () => {
-    render(<AccountIndexesTabs actions={actions} indexes={indexes} />);
+  it("keeps the two-level directory visible while showing selected scope pages", () => {
+    const { rerender } = render(<AccountIndexesTabs actions={actions} indexes={indexes} page={1} selectedIndexId="" selectedSite="" pages={{ pages: [indexes[0].progress[0]], totalCount: 2 }} />);
 
-    expect(screen.getByRole("heading", { name: "react.dev" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "playwright.dev" })).toBeInTheDocument();
-    const reactTable = screen.getByRole("table", { name: /directory trees for react.dev/i });
-    expect(reactTable).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: /directory trees for playwright.dev/i })).toBeInTheDocument();
-    expect(within(reactTable).getByRole("columnheader", { name: /directory tree/i })).toBeInTheDocument();
-    expect(within(reactTable).getByRole("columnheader", { name: /host/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /react learn/i })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: /react reference/i })).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByText("Uploaded")).toBeInTheDocument();
-    expect(screen.getByText("Not submitted")).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: /index directory/i })).toBeInTheDocument();
+    expect(screen.getByText("react.dev")).toBeInTheDocument();
+    expect(screen.getByText("playwright.dev")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /react learn.*2/i })).toHaveAttribute("href", "/account/indexes?site=react.dev&index=user-index-1");
+    expect(screen.getByRole("link", { name: /react reference.*5/i })).toHaveAttribute("href", "/account/indexes?site=react.dev&index=user-index-3");
+    expect(screen.getByRole("link", { name: /react learn.*2/i, current: "page" })).toBeInTheDocument();
     expect(screen.getByText("Quick Start")).toBeInTheDocument();
-    expect(screen.queryByText("Installation Intro")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /remove from my account/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /submit for review/i })).toBeInTheDocument();
+
+    const reactSite = screen.getByText("react.dev").closest("details");
+    expect(reactSite).toHaveAttribute("open");
+    fireEvent.click(screen.getByText("react.dev"));
+    expect(reactSite).not.toHaveAttribute("open");
+
+    rerender(<AccountIndexesTabs actions={actions} indexes={indexes} page={2} selectedIndexId="user-index-1" selectedSite="react.dev" pages={{ pages: [indexes[0].progress[0]], totalCount: 42 }} />);
+
+    expect(screen.getByRole("table", { name: /index pages/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /react learn.*2/i, current: "page" })).toBeInTheDocument();
+    expect(screen.getByText("Quick Start")).toBeInTheDocument();
+    expect(screen.getByText("Page 2 of 3 · 20 per page")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute("href", "/account/indexes?site=react.dev&index=user-index-1");
+    expect(screen.getByRole("link", { name: "Next" })).toHaveAttribute("href", "/account/indexes?site=react.dev&index=user-index-1&page=3");
+    expect(screen.getByRole("button", { name: /clear index progress/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /delete uploaded index/i })).toBeInTheDocument();
-    const uploadedActions = screen.getByText("More actions").closest("details");
-    expect(uploadedActions).not.toBeNull();
-    expect(within(uploadedActions!).getByRole("button", { name: /clear index progress/i })).toBeInTheDocument();
-    expect(within(uploadedActions!).getByRole("button", { name: /delete uploaded index/i })).toBeInTheDocument();
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: /playwright docs/i }));
+  it("offers one site-level shortcut for all reviewable uploaded scopes", () => {
+    render(<AccountIndexesTabs actions={actions} indexes={indexes} page={1} selectedIndexId="" selectedSite="" pages={{ pages: [indexes[0].progress[0]], totalCount: 2 }} />);
 
-    expect(screen.getByRole("button", { name: /react learn/i })).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByRole("button", { name: /playwright docs/i })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText("Synced system")).toBeInTheDocument();
-    expect(screen.queryByText("Quick Start")).not.toBeInTheDocument();
-    expect(screen.getByText("Installation Intro")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /remove from my account/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /delete uploaded index/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /submit for review/i })).not.toBeInTheDocument();
-    const systemActions = screen.getByText("More actions").closest("details");
-    expect(systemActions).not.toBeNull();
-    expect(within(systemActions!).getByRole("button", { name: /clear index progress/i })).toBeInTheDocument();
-    expect(within(systemActions!).getByRole("button", { name: /remove from my account/i })).toBeInTheDocument();
-    expect(screen.queryByRole("table", { name: /your indexes/i })).not.toBeInTheDocument();
+    const submitSiteButton = screen.getByRole("button", { name: /submit 2 scopes from react.dev for review/i });
+    expect(submitSiteButton).toHaveTextContent("Submit 2");
+    expect(submitSiteButton.closest("form")).toContainElement(screen.getByDisplayValue("react.dev"));
+    expect(screen.queryByRole("button", { name: /playwright.dev for review/i })).not.toBeInTheDocument();
   });
 });

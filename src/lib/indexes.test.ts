@@ -1,16 +1,19 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  approveIndexReview,
+  approvePendingSiteReviews,
   getIndexAvailability,
   getPendingReviewIndexAvailability,
+  listCurrentUserIndexPages,
   listCurrentSystemIndexes,
+  listCurrentSystemIndexPages,
   listCurrentUserIndexes,
   listAdminIndexes,
   markSystemIndexActive,
   pullPendingReviewIndex,
   pullUserIndexes,
   submitUploadedIndexForReview,
+  submitUploadedSiteForReview,
   uploadUserIndexes,
   upsertSystemIndex,
 } from "./indexes";
@@ -54,6 +57,11 @@ class TableQuery {
 
   limit(count: number) {
     this.db.calls.push({ table: this.table, method: "limit", count });
+    return this;
+  }
+
+  range(from: number, to: number) {
+    this.db.calls.push({ table: this.table, method: "range", from, to });
     return this;
   }
 
@@ -242,7 +250,7 @@ describe("index services", () => {
     expect(result.payload).toBeNull();
   });
 
-  it("lists current user indexes with zero progress from index pages when progress was cleared", async () => {
+  it("lists current user index summaries without loading every page or progress row", async () => {
     const db = new FakeSupabase();
     db.queue("user_indexes", [
       {
@@ -266,44 +274,66 @@ describe("index services", () => {
         error: null,
       },
     ]);
-    db.queue("user_page_progress", [{ data: [], error: null }]);
-    db.queue("index_pages", [
-      {
-        data: [
-          {
-            id: "page-1",
-            index_id: "index-1",
-            site_id: "react.dev::learn",
-            url: "https://react.dev/learn",
-            title: "Quick Start",
-            order: 0,
-            content_height: 1000,
-            updated_at: "2026-06-12T08:00:00.000Z",
-          },
-        ],
-        error: null,
-      },
-    ]);
-
     const result = await listCurrentUserIndexes(db as never, "user-1");
 
     expect(result[0]).toMatchObject({
       scopeTitle: "React Learn",
       pageCount: 1,
-      viewedPageCount: 0,
-      totalContentHeight: 1000,
-      totalViewedHeight: 0,
-      progress: [
-        {
-          title: "Quick Start",
-          viewedHeight: 0,
-          progressPercent: 0,
-        },
-      ],
     });
+    expect(db.calls).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ table: "index_pages", method: "from" }),
+      expect.objectContaining({ table: "user_page_progress", method: "from" }),
+    ]));
+    expect(db.calls).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        table: "user_indexes",
+        selectColumns: expect.not.stringContaining("indexes(*)"),
+      }),
+    ]));
   });
 
-  it("lists searchable system indexes with their pages", async () => {
+  it("loads one page of current user index pages and their matching progress", async () => {
+    const db = new FakeSupabase();
+    db.queue("index_pages", [{
+      data: [
+        {
+          id: "page-21",
+          index_id: "index-1",
+          site_id: "react.dev::learn",
+          url: "https://react.dev/learn/state",
+          title: "Managing State",
+          order: 20,
+          content_height: 1000,
+          user_page_progress: [{
+            user_index_id: "user-index-1",
+            url: "https://react.dev/learn/state",
+            viewed_height: 500,
+            progress_percent: 50,
+          }],
+        },
+      ],
+      count: 42,
+      error: null,
+    }]);
+    const result = await listCurrentUserIndexPages(db as never, { id: "user-index-1", indexId: "index-1" }, 2, 20);
+
+    expect(result).toMatchObject({
+      totalCount: 42,
+      pages: [{ title: "Managing State", viewedHeight: 500, progressPercent: 50 }],
+    });
+    expect(db.calls).toEqual(expect.arrayContaining([
+      expect.objectContaining({ table: "index_pages", method: "range", from: 20, to: 39 }),
+      expect.objectContaining({
+        table: "index_pages",
+        selectColumns: expect.stringContaining("user_page_progress!left"),
+      }),
+    ]));
+    expect(db.calls).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ table: "user_page_progress", method: "from" }),
+    ]));
+  });
+
+  it("lists searchable system index summaries without loading their pages", async () => {
     const db = new FakeSupabase();
     db.queue("indexes", [
       {
@@ -326,23 +356,6 @@ describe("index services", () => {
         error: null,
       },
     ]);
-    db.queue("index_pages", [
-      {
-        data: [
-          {
-            id: "page-1",
-            index_id: "system-index-1",
-            url: "https://react.dev/learn",
-            title: "Quick Start",
-            order: 0,
-            content_height: 1000,
-            updated_at: "2026-06-12T08:00:00.000Z",
-          },
-        ],
-        error: null,
-      },
-    ]);
-
     const result = await listCurrentSystemIndexes(db as never, { host: "react" });
 
     expect(result[0]).toMatchObject({
@@ -350,19 +363,41 @@ describe("index services", () => {
       host: "react.dev",
       scopeTitle: "React Learn",
       systemStatus: "active",
-      pages: [
-        {
-          title: "Quick Start",
-          contentHeight: 1000,
-        },
-      ],
     });
     expect(db.calls).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ table: "indexes", method: "ilike", column: "host", value: "%react%" }),
-        expect.objectContaining({ table: "index_pages", method: "in", column: "index_id", values: ["system-index-1"] }),
       ]),
     );
+    expect(db.calls).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ table: "index_pages", method: "from" }),
+    ]));
+  });
+
+  it("loads a paginated system index page list", async () => {
+    const db = new FakeSupabase();
+    db.queue("index_pages", [{
+      data: [{
+        id: "page-21",
+        index_id: "system-index-1",
+        url: "https://react.dev/learn/state",
+        title: "Managing State",
+        order: 20,
+        content_height: 1000,
+      }],
+      count: 42,
+      error: null,
+    }]);
+
+    const result = await listCurrentSystemIndexPages(db as never, "system-index-1", 2, 20);
+
+    expect(result).toMatchObject({
+      totalCount: 42,
+      pages: [{ title: "Managing State", order: 20, contentHeight: 1000 }],
+    });
+    expect(db.calls).toEqual(expect.arrayContaining([
+      expect.objectContaining({ table: "index_pages", method: "range", from: 20, to: 39 }),
+    ]));
   });
 
   it("returns available site info from the system index", async () => {
@@ -559,63 +594,63 @@ describe("index services", () => {
     );
   });
 
-  it("approves a pending uploaded index by creating an inactive system version", async () => {
+  it("submits every reviewable uploaded scope for one user and host", async () => {
     const db = new FakeSupabase();
-    db.queue("indexes", [
-      {
-        data: {
-          id: "uploaded-index-1",
-          source: "user_upload",
-          site_id: "react.dev::learn",
-          host: "react.dev",
-          scope_key: "learn",
-          scope_title: "React Learn",
-          schema_version: 1,
-          version: "v1",
-          page_count: 1,
-          index_snapshot: portablePayload.sites[0],
-        },
-        error: null,
-      },
-      { data: { id: "system-index-1", version: "v1" }, error: null },
-      { data: null, error: null },
-    ]);
-    db.queue("index_pages", [
-      {
-        data: [
-          {
-            id: "page-1",
-            index_id: "uploaded-index-1",
-            site_id: "react.dev::learn",
-            url: "https://react.dev/learn",
-            title: "Learn",
-            order: 0,
-            content_height: 1000,
-          },
-        ],
-        error: null,
-      },
-      { data: [{ id: "system-page-1", url: "https://react.dev/learn" }], error: null },
-    ]);
+    db.queue("indexes", [{ data: null, error: null }]);
 
-    await approveIndexReview(db as never, null, "uploaded-index-1", "looks good");
+    await submitUploadedSiteForReview(db as never, "user-1", "react.dev");
 
-    expect(db.calls.find((call) => call.table === "indexes" && call.method === "insert")).toMatchObject({
-      payload: expect.objectContaining({
-        source: "system",
-        system_status: "inactive",
-        approved_from_index_id: "uploaded-index-1",
-      }),
-    });
     expect(db.calls).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           table: "indexes",
           method: "update",
-          payload: expect.objectContaining({ review_status: "approved", review_note: "looks good" }),
+          payload: expect.objectContaining({ review_status: "pending" }),
+        }),
+        expect.objectContaining({
+          filters: expect.arrayContaining([
+            ["owner_user_id", "user-1"],
+            ["source", "user_upload"],
+            ["host", "react.dev"],
+            ["review_status", ["none", "rejected"]],
+          ]),
         }),
       ]),
     );
+  });
+
+  it("approves every pending scope for one host as a system index", async () => {
+    const db = new FakeSupabase();
+    db.queue("indexes", [
+      {
+        data: [
+          { id: "pending-1", host: "react.dev", review_status: "pending" },
+          { id: "pending-2", host: "react.dev", review_status: "pending" },
+        ],
+        error: null,
+      },
+      { data: { id: "pending-1", source: "user_upload", site_id: "react.dev::learn", host: "react.dev", scope_key: "learn", scope_title: "React Learn", schema_version: 1, version: "v1", index_snapshot: {}, review_status: "pending" }, error: null },
+      { data: { id: "pending-2", source: "user_upload", site_id: "react.dev::reference", host: "react.dev", scope_key: "reference", scope_title: "React Reference", schema_version: 1, version: "v1", index_snapshot: {}, review_status: "pending" }, error: null },
+      { data: { id: "system-1", version: "v1" }, error: null },
+      { data: { id: "system-2", version: "v1" }, error: null },
+      { data: null, error: null },
+      { data: null, error: null },
+    ]);
+    db.queue("index_pages", [
+      { data: [], error: null },
+      { data: [], error: null },
+      { data: [], error: null },
+      { data: [], error: null },
+    ]);
+
+    const result = await approvePendingSiteReviews(db as never, null, "react.dev");
+
+    expect(result).toEqual({ approvedCount: 2 });
+    expect(db.calls).toEqual(expect.arrayContaining([
+      expect.objectContaining({ filters: expect.arrayContaining([["host", "react.dev"], ["review_status", "pending"]]) }),
+    ]));
+    expect(db.calls.filter((call) => call.table === "indexes" && call.method === "insert")).toHaveLength(2);
+    expect(db.calls.filter((call) => call.table === "indexes" && call.method === "update")).toHaveLength(2);
   });
 
   it("marks one system version active by deactivating the site's other versions first", async () => {

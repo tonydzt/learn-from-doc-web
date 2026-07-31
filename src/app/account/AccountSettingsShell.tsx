@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 type AccountSettingsShellProps = {
   activeSection: "account" | "permissions" | "indexes";
   children: ReactNode;
+  contentClassName?: string;
   userProfile?: {
     nickname: string;
     avatarInitial: string;
@@ -35,6 +36,7 @@ const accountNavItems = [
 export function AccountSettingsShell({
   activeSection,
   children,
+  contentClassName,
   userProfile,
 }: AccountSettingsShellProps) {
   return (
@@ -59,7 +61,7 @@ export function AccountSettingsShell({
           </nav>
         </aside>
 
-        <section className="account-settings-content">{children}</section>
+        <section className={`account-settings-content${contentClassName ? ` ${contentClassName}` : ""}`}>{children}</section>
       </main>
     </div>
   );

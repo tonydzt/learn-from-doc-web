@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import {
   approveIndexReview,
+  approvePendingSiteReviews,
   deleteAdminIndex,
   getAdminIndexRawSnapshot,
   markSystemIndexActive,
@@ -39,33 +40,30 @@ export async function rebuildSystemIndexPages(formData: FormData) {
   const normalized = normalizeIndexSnapshot(snapshot);
 
   await rebuildAdminIndexPages(supabase, indexId, normalized.pages);
-  revalidatePath(`/admin/indexes/${indexId}`);
+  revalidatePath("/admin/indexes");
 }
 
 export async function approvePendingIndexReview(formData: FormData) {
   const indexId = String(formData.get("indexId") ?? "");
   const note = String(formData.get("reviewNote") ?? "").trim();
-
-  if (!indexId) {
-    return;
-  }
-
+  if (!indexId) return;
   await approveIndexReview(createAdminSupabaseClient(), null, indexId, note);
   revalidatePath("/admin/indexes");
-  revalidatePath(`/admin/indexes/${indexId}`);
+}
+
+export async function approvePendingSiteReview(formData: FormData) {
+  const host = String(formData.get("host") ?? "").trim();
+  if (!host) return;
+  await approvePendingSiteReviews(createAdminSupabaseClient(), null, host);
+  revalidatePath("/admin/indexes");
 }
 
 export async function rejectPendingIndexReview(formData: FormData) {
   const indexId = String(formData.get("indexId") ?? "");
   const note = String(formData.get("reviewNote") ?? "").trim();
-
-  if (!indexId) {
-    return;
-  }
-
+  if (!indexId) return;
   await rejectIndexReview(createAdminSupabaseClient(), null, indexId, note);
   revalidatePath("/admin/indexes");
-  revalidatePath(`/admin/indexes/${indexId}`);
 }
 
 export async function markSystemIndexActiveAction(formData: FormData) {
@@ -77,5 +75,4 @@ export async function markSystemIndexActiveAction(formData: FormData) {
 
   await markSystemIndexActive(createAdminSupabaseClient(), indexId);
   revalidatePath("/admin/indexes");
-  revalidatePath(`/admin/indexes/${indexId}`);
 }

@@ -84,6 +84,10 @@ type DbIndexPage = {
   updated_at?: string;
 };
 
+type DbIndexPageWithProgress = DbIndexPage & {
+  user_page_progress?: DbProgressWithId[];
+};
+
 export type SystemIndexSnapshot = {
   schemaVersion: number;
   site: {
@@ -308,7 +312,6 @@ export async function listPendingReviewIndexes(
 
   return (data ?? []).map((row: DbIndex) => ({
     id: row.id,
-    ownerUserId: row.owner_user_id ?? undefined,
     siteId: row.site_id,
     host: row.host,
     scopeKey: row.scope_key,
@@ -465,6 +468,25 @@ export async function submitUploadedIndexForReview(supabase: SupabaseClient, use
   if (error) throw new Error("Could not submit index for review.");
 }
 
+export async function submitUploadedSiteForReview(supabase: SupabaseClient, userId: string, host: string) {
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("indexes")
+    .update({
+      review_status: "pending",
+      submitted_at: now,
+      reviewed_at: null,
+      reviewed_by_user_id: null,
+      review_note: null,
+    })
+    .eq("owner_user_id", userId)
+    .eq("source", "user_upload")
+    .eq("host", host)
+    .in("review_status", ["none", "rejected"]);
+
+  if (error) throw new Error("Could not submit site indexes for review.");
+}
+
 export async function approveIndexReview(
   supabase: SupabaseClient,
   reviewerUserId: string | null,
@@ -472,59 +494,42 @@ export async function approveIndexReview(
   reviewNote?: string,
 ) {
   const uploaded = await getAdminIndexDetail(supabase, indexId) as DbIndex;
-
-  if (uploaded.source !== "user_upload") {
-    throw new Error("Only uploaded indexes can be approved.");
-  }
+  if (uploaded.source !== "user_upload") throw new Error("Only uploaded indexes can be approved.");
+  if (uploaded.review_status !== "pending") throw new Error("Only pending indexes can be approved.");
 
   const pages = await listAdminIndexPages(supabase, indexId);
   const now = new Date().toISOString();
   const systemIndex = await insertIndex(supabase, {
-    source: "system",
-    owner_user_id: null,
-    site_id: uploaded.site_id,
-    host: uploaded.host,
-    scope_key: uploaded.scope_key,
-    scope_title: uploaded.scope_title,
-    schema_version: uploaded.schema_version,
-    version: uploaded.version,
-    content_hash: uploaded.content_hash ?? null,
-    page_count: uploaded.page_count ?? pages.length,
-    index_snapshot: uploaded.index_snapshot,
-    indexed_at: now,
-    review_status: "approved",
-    system_status: "inactive",
+    source: "system", owner_user_id: null, site_id: uploaded.site_id, host: uploaded.host,
+    scope_key: uploaded.scope_key, scope_title: uploaded.scope_title, schema_version: uploaded.schema_version,
+    version: uploaded.version, content_hash: uploaded.content_hash ?? null, page_count: uploaded.page_count ?? pages.length,
+    index_snapshot: uploaded.index_snapshot, indexed_at: now, review_status: "approved", system_status: "inactive",
     approved_from_index_id: uploaded.id,
   });
+  await upsertIndexPages(supabase, systemIndex.id, pages.map((page) => ({
+    siteId: page.site_id, url: page.url, title: page.title, order: page.order ?? 0,
+    contentHeight: page.content_height ?? undefined, contentHash: page.content_hash ?? undefined,
+    structureHash: page.structure_hash ?? undefined,
+  })));
+  const { error } = await supabase.from("indexes").update({
+    review_status: "approved", reviewed_at: now, reviewed_by_user_id: reviewerUserId, review_note: reviewNote || null,
+  }).eq("id", indexId).eq("source", "user_upload").eq("review_status", "pending");
+  if (error) throw new Error("Could not mark uploaded index as approved.");
+  return systemIndex;
+}
 
-  await upsertIndexPages(
-    supabase,
-    systemIndex.id,
-    pages.map((page) => ({
-      siteId: page.site_id,
-      url: page.url,
-      title: page.title,
-      order: page.order ?? 0,
-      contentHeight: page.content_height ?? undefined,
-      contentHash: page.content_hash ?? undefined,
-      structureHash: page.structure_hash ?? undefined,
-    })),
+export async function approvePendingSiteReviews(
+  supabase: SupabaseClient,
+  reviewerUserId: string | null,
+  host: string,
+) {
+  const pendingIndexes = await listPendingReviewIndexes(supabase, { host });
+
+  await Promise.all(
+    pendingIndexes.map((index) => approveIndexReview(supabase, reviewerUserId, index.id)),
   );
 
-  const { error } = await supabase
-    .from("indexes")
-    .update({
-      review_status: "approved",
-      reviewed_at: now,
-      reviewed_by_user_id: reviewerUserId,
-      review_note: reviewNote || null,
-    })
-    .eq("id", indexId)
-    .eq("source", "user_upload");
-
-  if (error) throw new Error("Could not mark uploaded index as approved.");
-
-  return systemIndex;
+  return { approvedCount: pendingIndexes.length };
 }
 
 export async function rejectIndexReview(
@@ -533,17 +538,10 @@ export async function rejectIndexReview(
   indexId: string,
   reviewNote?: string,
 ) {
-  const { error } = await supabase
-    .from("indexes")
-    .update({
-      review_status: "rejected",
-      reviewed_at: new Date().toISOString(),
-      reviewed_by_user_id: reviewerUserId,
-      review_note: reviewNote || null,
-    })
-    .eq("id", indexId)
-    .eq("source", "user_upload");
-
+  const { error } = await supabase.from("indexes").update({
+    review_status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by_user_id: reviewerUserId,
+    review_note: reviewNote || null,
+  }).eq("id", indexId).eq("source", "user_upload");
   if (error) throw new Error("Could not reject index review.");
 }
 
@@ -646,50 +644,14 @@ export async function deleteCurrentUserUploadedIndex(supabase: SupabaseClient, u
 export async function listCurrentUserIndexes(supabase: SupabaseClient, userId: string) {
   const { data: userIndexesData, error } = await supabase
     .from("user_indexes")
-    .select("id,user_id,index_id,relation_source,synced_index_version,updated_at,indexes(*)")
+    .select("id,user_id,index_id,relation_source,synced_index_version,updated_at,indexes(id,source,site_id,host,scope_key,scope_title,page_count,review_status,submitted_at,reviewed_at,review_note)")
     .eq("user_id", userId)
     .order("updated_at", { ascending: false });
 
   if (error) throw new Error("Could not load current user indexes.");
 
-  const userIndexes = (userIndexesData ?? []) as unknown as DbUserIndex[];
-  const userIndexIds = userIndexes.map((userIndex) => userIndex.id);
-
-  if (userIndexIds.length === 0) {
-    return [];
-  }
-
-  const { data: progressData, error: progressError } = await supabase
-    .from("user_page_progress")
-    .select("*")
-    .in("user_index_id", userIndexIds)
-    .order("order", { ascending: true });
-
-  if (progressError) throw new Error("Could not load current user progress.");
-
-  const indexIds = userIndexes.map((userIndex) => userIndex.index_id).filter(Boolean) as string[];
-  const { data: pageData, error: pageError } = await supabase
-    .from("index_pages")
-    .select("*")
-    .in("index_id", indexIds)
-    .order("order", { ascending: true });
-
-  if (pageError) throw new Error("Could not load current user index pages.");
-
-  const progressByUserIndex = groupBy((progressData ?? []) as DbProgressWithId[], "user_index_id");
-  const pagesByIndex = groupBy((pageData ?? []) as unknown as DbIndexPage[], "index_id");
-
-  return userIndexes.map((userIndex) => {
+  return ((userIndexesData ?? []) as unknown as DbUserIndex[]).map((userIndex) => {
     const index = userIndex.indexes;
-    const progressRows = progressByUserIndex.get(userIndex.id) ?? [];
-    const progressRowsByUrl = new Map(progressRows.map((progress) => [progress.url, progress]));
-    const indexPages = pagesByIndex.get(userIndex.index_id ?? "") ?? [];
-    const progress =
-      indexPages.length > 0
-        ? indexPages.map((page) => mapPageWithProgress(page, progressRowsByUrl.get(page.url), userIndex.id))
-        : progressRows.map(mapProgressRow);
-    const totalContentHeight = progress.reduce((sum, item) => sum + (item.contentHeight ?? 0), 0);
-    const totalViewedHeight = progress.reduce((sum, item) => sum + item.viewedHeight, 0);
 
     return {
       id: userIndex.id,
@@ -702,17 +664,41 @@ export async function listCurrentUserIndexes(supabase: SupabaseClient, userId: s
       scopeTitle: index?.scope_title ?? "",
       indexSource: index?.source ?? "user_upload",
       pageCount: index?.page_count ?? 0,
-      viewedPageCount: progress.filter((item) => item.viewedHeight > 0).length,
-      totalContentHeight,
-      totalViewedHeight,
       updatedAt: userIndex.updated_at ?? "",
       reviewStatus: index?.review_status ?? "none",
       submittedAt: index?.submitted_at ?? undefined,
       reviewedAt: index?.reviewed_at ?? undefined,
       reviewNote: index?.review_note ?? undefined,
-      progress,
     };
   });
+}
+
+export async function listCurrentUserIndexPages(
+  supabase: SupabaseClient,
+  userIndex: { id: string; indexId: string },
+  page: number,
+  pageSize: number,
+) {
+  const start = (page - 1) * pageSize;
+  const { data: pageData, count, error } = await supabase
+    .from("index_pages")
+    .select("id,index_id,site_id,url,title,order,content_height,updated_at,user_page_progress!left(user_index_id,url,viewed_height,progress_percent,raw_progress_version,raw_progress,updated_at)", { count: "exact" })
+    .eq("index_id", userIndex.indexId)
+    .eq("user_page_progress.user_index_id", userIndex.id)
+    .order("order", { ascending: true })
+    .range(start, start + pageSize - 1);
+
+  if (error) throw new Error("Could not load current user index pages.");
+
+  const pages = (pageData ?? []) as DbIndexPageWithProgress[];
+  if (pages.length === 0) {
+    return { pages: [], totalCount: count ?? 0 };
+  }
+
+  return {
+    pages: pages.map(({ user_page_progress: progressRows, ...item }) => mapPageWithProgress(item, progressRows?.[0], userIndex.id)),
+    totalCount: count ?? 0,
+  };
 }
 
 export async function listCurrentSystemIndexes(
@@ -721,7 +707,7 @@ export async function listCurrentSystemIndexes(
 ) {
   let query = supabase
     .from("indexes")
-    .select("*")
+    .select("id,site_id,host,scope_key,scope_title,schema_version,version,page_count,indexed_at,updated_at,system_status")
     .eq("source", "system")
     .order("updated_at", { ascending: false });
 
@@ -734,21 +720,6 @@ export async function listCurrentSystemIndexes(
   if (error) throw new Error("Could not load system indexes.");
 
   const indexes = (indexData ?? []) as DbIndex[];
-  const indexIds = indexes.map((index) => index.id).filter(Boolean) as string[];
-
-  if (indexIds.length === 0) {
-    return [];
-  }
-
-  const { data: pageData, error: pageError } = await supabase
-    .from("index_pages")
-    .select("*")
-    .in("index_id", indexIds)
-    .order("order", { ascending: true });
-
-  if (pageError) throw new Error("Could not load system index pages.");
-
-  const pagesByIndex = groupBy((pageData ?? []) as unknown as DbIndexPage[], "index_id");
 
   return indexes.map((index) => ({
     id: index.id ?? "",
@@ -762,15 +733,36 @@ export async function listCurrentSystemIndexes(
     indexedAt: index.indexed_at ?? "",
     updatedAt: index.updated_at ?? "",
     systemStatus: index.system_status ?? "inactive",
-    pages: (pagesByIndex.get(index.id ?? "") ?? []).map((page) => ({
-      id: page.id ?? "",
-      url: page.url ?? "",
-      title: page.title ?? "",
-      order: page.order ?? 0,
-      contentHeight: page.content_height ?? undefined,
-      updatedAt: page.updated_at ?? "",
-    })),
   }));
+}
+
+export async function listCurrentSystemIndexPages(
+  supabase: SupabaseClient,
+  indexId: string,
+  page: number,
+  pageSize: number,
+) {
+  const start = (page - 1) * pageSize;
+  const { data, count, error } = await supabase
+    .from("index_pages")
+    .select("id,url,title,order,content_height,updated_at", { count: "exact" })
+    .eq("index_id", indexId)
+    .order("order", { ascending: true })
+    .range(start, start + pageSize - 1);
+
+  if (error) throw new Error("Could not load system index pages.");
+
+  return {
+    pages: ((data ?? []) as DbIndexPage[]).map((item) => ({
+      id: item.id,
+      url: item.url,
+      title: item.title,
+      order: item.order ?? 0,
+      contentHeight: item.content_height ?? undefined,
+      updatedAt: item.updated_at ?? "",
+    })),
+    totalCount: count ?? 0,
+  };
 }
 
 export async function upsertSystemIndex(supabase: SupabaseClient, snapshot: SystemIndexSnapshot) {
@@ -1052,29 +1044,7 @@ function availableIndexSite(index: DbIndex) {
   };
 }
 
-function mapProgressRow(row: DbProgressWithId) {
-  return {
-    id: row.id ?? `${row.user_index_id}:${row.url}`,
-    userIndexId: row.user_index_id,
-    indexPageId: row.index_page_id ?? undefined,
-    siteId: row.site_id,
-    url: row.url,
-    title: row.title ?? undefined,
-    order: row.order ?? undefined,
-    contentHeight: row.content_height ?? undefined,
-    viewedHeight: row.viewed_height,
-    progressPercent: row.progress_percent ?? 0,
-    rawProgressVersion: row.raw_progress_version ?? undefined,
-    rawProgress: row.raw_progress,
-    updatedAt: row.updated_at ?? "",
-  };
-}
-
 function mapPageWithProgress(page: DbIndexPage, progress: DbProgressWithId | undefined, userIndexId: string) {
-  if (progress) {
-    return mapProgressRow(progress);
-  }
-
   return {
     id: page.id,
     userIndexId,
@@ -1084,10 +1054,10 @@ function mapPageWithProgress(page: DbIndexPage, progress: DbProgressWithId | und
     title: page.title,
     order: page.order ?? undefined,
     contentHeight: page.content_height ?? undefined,
-    viewedHeight: 0,
-    progressPercent: 0,
-    rawProgressVersion: undefined,
-    rawProgress: undefined,
-    updatedAt: page.updated_at ?? "",
+    viewedHeight: progress?.viewed_height ?? 0,
+    progressPercent: progress?.progress_percent ?? 0,
+    rawProgressVersion: progress?.raw_progress_version ?? undefined,
+    rawProgress: progress?.raw_progress,
+    updatedAt: progress?.updated_at ?? page.updated_at ?? "",
   };
 }

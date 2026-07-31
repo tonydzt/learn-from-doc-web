@@ -8,6 +8,7 @@ import {
   clearUserPageProgress,
   deleteCurrentUserUploadedIndex,
   submitUploadedIndexForReview,
+  submitUploadedSiteForReview,
   unlinkCurrentUserIndex,
 } from "@/lib/indexes";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -45,6 +46,18 @@ export async function submitCurrentUserIndexForReviewAction(formData: FormData) 
   }
 
   await submitUploadedIndexForReview(supabase, userId, indexId);
+  revalidatePath("/account/indexes");
+}
+
+export async function submitCurrentUserSiteForReviewAction(formData: FormData) {
+  const host = String(formData.get("host") ?? "").trim();
+  const { supabase, userId } = await requireCurrentUser();
+
+  if (!host) {
+    return;
+  }
+
+  await submitUploadedSiteForReview(supabase, userId, host);
   revalidatePath("/account/indexes");
 }
 

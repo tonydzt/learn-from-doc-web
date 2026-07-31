@@ -3,19 +3,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AccountIndexesPage from "./page";
 
-const { redirectMock, getUserMock, getOrCreateUserProfileMock, listCurrentUserIndexesMock, listCurrentSystemIndexesMock } =
+const { redirectMock, getClaimsMock, getOrCreateUserProfileMock, listCurrentUserIndexesMock, listCurrentUserIndexPagesMock, listCurrentSystemIndexesMock, listCurrentSystemIndexPagesMock } =
   vi.hoisted(() => ({
     redirectMock: vi.fn(),
-    getUserMock: vi.fn(),
+    getClaimsMock: vi.fn(),
     getOrCreateUserProfileMock: vi.fn(),
     listCurrentUserIndexesMock: vi.fn(),
+    listCurrentUserIndexPagesMock: vi.fn(),
     listCurrentSystemIndexesMock: vi.fn(),
+    listCurrentSystemIndexPagesMock: vi.fn(),
   }));
 
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: () => ({
-    auth: { getUser: getUserMock },
+    auth: { getClaims: getClaimsMock },
   }),
 }));
 vi.mock("@/lib/profiles", async (importOriginal) => ({
@@ -25,22 +27,28 @@ vi.mock("@/lib/profiles", async (importOriginal) => ({
 vi.mock("@/lib/indexes", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/indexes")>()),
   listCurrentUserIndexes: listCurrentUserIndexesMock,
+  listCurrentUserIndexPages: listCurrentUserIndexPagesMock,
   listCurrentSystemIndexes: listCurrentSystemIndexesMock,
+  listCurrentSystemIndexPages: listCurrentSystemIndexPagesMock,
 }));
 
 describe("AccountIndexesPage", () => {
   beforeEach(() => {
     redirectMock.mockReset();
-    getUserMock.mockReset();
+    getClaimsMock.mockReset();
     getOrCreateUserProfileMock.mockReset();
     listCurrentUserIndexesMock.mockReset();
     listCurrentUserIndexesMock.mockResolvedValue([]);
+    listCurrentUserIndexPagesMock.mockReset();
+    listCurrentUserIndexPagesMock.mockResolvedValue({ pages: [], totalCount: 0 });
     listCurrentSystemIndexesMock.mockReset();
     listCurrentSystemIndexesMock.mockResolvedValue([]);
+    listCurrentSystemIndexPagesMock.mockReset();
+    listCurrentSystemIndexPagesMock.mockResolvedValue({ pages: [], totalCount: 0 });
   });
 
   it("redirects anonymous visitors to login", async () => {
-    getUserMock.mockResolvedValue({ data: { user: null } });
+    getClaimsMock.mockResolvedValue({ data: null });
 
     await AccountIndexesPage();
 
@@ -48,7 +56,7 @@ describe("AccountIndexesPage", () => {
   });
 
   it("shows an empty state when the user has no indexes", async () => {
-    getUserMock.mockResolvedValue({ data: { user: { id: "user-1", email: "reader@example.com" } } });
+    getClaimsMock.mockResolvedValue({ data: { claims: { sub: "user-1", email: "reader@example.com" } } });
     getOrCreateUserProfileMock.mockResolvedValue({
       nickname: "Reader01",
       avatarInitial: "R",
@@ -67,8 +75,8 @@ describe("AccountIndexesPage", () => {
     expect(screen.getByText("No synced indexes")).toBeInTheDocument();
   });
 
-  it("shows index summaries and page progress for the current user", async () => {
-    getUserMock.mockResolvedValue({ data: { user: { id: "user-1", email: "reader@example.com" } } });
+  it("loads the first scope page by default and switches to the requested scope", async () => {
+    getClaimsMock.mockResolvedValue({ data: { claims: { sub: "user-1", email: "reader@example.com" } } });
     getOrCreateUserProfileMock.mockResolvedValue({
       nickname: "Reader01",
       avatarInitial: "R",
@@ -85,41 +93,47 @@ describe("AccountIndexesPage", () => {
         host: "react.dev",
         scopeTitle: "React Learn",
         pageCount: 2,
-        viewedPageCount: 1,
-        totalViewedHeight: 500,
-        totalContentHeight: 1000,
         updatedAt: "2026-06-12T08:00:00.000Z",
-        progress: [
-          {
-            id: "progress-1",
-            userIndexId: "user-index-1",
-            siteId: "react.dev::learn",
-            url: "https://react.dev/learn",
-            title: "Quick Start",
-            viewedHeight: 500,
-            progressPercent: 50,
-            rawProgress: { viewedHeight: 500 },
-            updatedAt: "2026-06-12T08:00:00.000Z",
-          },
-        ],
       },
     ]);
+    listCurrentUserIndexPagesMock.mockResolvedValue({
+      pages: [{
+        id: "page-1",
+        userIndexId: "user-index-1",
+        url: "https://react.dev/learn",
+        title: "Quick Start",
+        viewedHeight: 500,
+        progressPercent: 50,
+      }],
+      totalCount: 42,
+    });
 
     render(await AccountIndexesPage());
 
     expect(screen.queryByText("Sync a system index")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "react.dev" })).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: /directory trees for react.dev/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /react learn/i })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText(/uploaded · not submitted · 1\/2 pages/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /react learn.*2/i })).toHaveAttribute("href", "/account/indexes?site=react.dev&index=user-index-1");
     expect(screen.getByText("Quick Start")).toBeInTheDocument();
-    expect(screen.getByText(/viewedHeight/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /clear index progress/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /delete uploaded index/i })).toBeInTheDocument();
+    expect(listCurrentUserIndexPagesMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ id: "user-index-1", indexId: "index-1" }),
+      1,
+      20,
+    );
+
+    render(await AccountIndexesPage({ searchParams: Promise.resolve({ site: "react.dev", index: "user-index-1", page: "2" }) }));
+
+    expect(screen.getAllByText("Quick Start")).toHaveLength(2);
+    expect(screen.getByText("Page 2 of 3 · 20 per page")).toBeInTheDocument();
+    expect(listCurrentUserIndexPagesMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ id: "user-index-1", indexId: "index-1" }),
+      2,
+      20,
+    );
   });
 
   it("shows searchable system indexes on a separate view", async () => {
-    getUserMock.mockResolvedValue({ data: { user: { id: "user-1", email: "reader@example.com" } } });
+    getClaimsMock.mockResolvedValue({ data: { claims: { sub: "user-1", email: "reader@example.com" } } });
     getOrCreateUserProfileMock.mockResolvedValue({
       nickname: "Reader01",
       avatarInitial: "R",
@@ -139,22 +153,23 @@ describe("AccountIndexesPage", () => {
         indexedAt: "2026-06-12T08:00:00.000Z",
         updatedAt: "2026-06-12T08:00:00.000Z",
         systemStatus: "active",
-        pages: [
-          {
-            id: "page-1",
-            url: "https://react.dev/learn",
-            title: "Quick Start",
-            order: 0,
-            contentHeight: 1000,
-            updatedAt: "2026-06-12T08:00:00.000Z",
-          },
-        ],
       },
     ]);
+    listCurrentSystemIndexPagesMock.mockResolvedValue({
+      pages: [{
+        id: "page-1",
+        url: "https://react.dev/learn",
+        title: "Quick Start",
+        order: 0,
+        contentHeight: 1000,
+        updatedAt: "2026-06-12T08:00:00.000Z",
+      }],
+      totalCount: 1,
+    });
 
     render(
       await AccountIndexesPage({
-        searchParams: Promise.resolve({ view: "system", host: "react.dev" }),
+        searchParams: Promise.resolve({ view: "system", host: "react.dev", site: "react.dev", index: "system-index-1" }),
       }),
     );
 
@@ -163,12 +178,12 @@ describe("AccountIndexesPage", () => {
       "/account/indexes?view=system",
     );
     expect(screen.getByRole("textbox", { name: /search system indexes by host/i })).toHaveValue("react.dev");
-    expect(screen.getByRole("heading", { name: "react.dev" })).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: /directory trees for react.dev/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /react learn/i })).toHaveAttribute("aria-pressed", "true");
-    expect(within(screen.getByRole("article", { name: /selected system index detail/i })).getByText("Active system index")).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: /system index directory/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /react learn.*1/i, current: "page" })).toBeInTheDocument();
+    expect(within(screen.getByRole("article", { name: /selected system index detail/i })).getByText("Active")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: /system index pages/i })).toBeInTheDocument();
     expect(screen.getByText("Quick Start")).toBeInTheDocument();
     expect(listCurrentSystemIndexesMock).toHaveBeenCalledWith(expect.anything(), { host: "react.dev" });
+    expect(listCurrentSystemIndexPagesMock).toHaveBeenCalledWith(expect.anything(), "system-index-1", 1, 20);
   });
 });

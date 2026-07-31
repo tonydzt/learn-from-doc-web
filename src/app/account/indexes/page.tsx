@@ -7,13 +7,14 @@ import {
   clearCurrentUserPageProgressAction,
   deleteCurrentUserUploadedIndexAction,
   submitCurrentUserIndexForReviewAction,
+  submitCurrentUserSiteForReviewAction,
   unlinkCurrentUserIndexAction,
 } from "@/app/account/indexes/actions";
 import { AccountSettingsShell } from "@/app/account/AccountSettingsShell";
 import { AccountIndexesTabs } from "@/components/AccountIndexesTabs";
 import { SystemIndexesBrowser } from "@/components/SystemIndexesBrowser";
 import { product } from "@/content/site";
-import { listCurrentSystemIndexes, listCurrentUserIndexes } from "@/lib/indexes";
+import { listCurrentSystemIndexes, listCurrentSystemIndexPages, listCurrentUserIndexPages, listCurrentUserIndexes } from "@/lib/indexes";
 import { getOrCreateUserProfile, type UserProfile } from "@/lib/profiles";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -32,16 +33,24 @@ export default async function AccountIndexesPage({ searchParams }: AccountIndexe
   const params = searchParams ? await searchParams : {};
   const activeView = firstParam(params.view) === "system" ? "system" : "mine";
   const host = firstParam(params.host)?.trim() ?? "";
+  const selectedSite = firstParam(params.site)?.trim() ?? "";
+  const selectedIndexId = firstParam(params.index)?.trim() ?? "";
+  const page = positiveInteger(firstParam(params.page));
   let userId: string | undefined;
   let profile: UserProfile | undefined;
+  let profilePromise: Promise<UserProfile | undefined> = Promise.resolve(undefined);
   const supabase = await createServerSupabaseClient();
 
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    userId = user?.id;
-    profile = user ? await getOrCreateUserProfile(supabase, user) : undefined;
+    const { data: claimsData } = await supabase.auth.getClaims();
+    const claims = claimsData?.claims;
+    userId = typeof claims?.sub === "string" ? claims.sub : undefined;
+    if (userId && claims) {
+      profilePromise = getOrCreateUserProfile(supabase, {
+        id: userId,
+        email: typeof claims.email === "string" ? claims.email : undefined,
+      });
+    }
   } catch {
     userId = undefined;
     profile = undefined;
@@ -51,13 +60,29 @@ export default async function AccountIndexesPage({ searchParams }: AccountIndexe
     return redirect("/login");
   }
 
-  const [indexes, systemIndexes] = await Promise.all([
-    listCurrentUserIndexes(supabase, userId),
-    activeView === "system" ? listCurrentSystemIndexes(supabase, { host }) : Promise.resolve([]),
+  const [loadedProfile, [indexes, systemIndexes]] = await Promise.all([
+    profilePromise,
+    Promise.all([
+      activeView === "mine" ? listCurrentUserIndexes(supabase, userId) : Promise.resolve([]),
+      activeView === "system" ? listCurrentSystemIndexes(supabase, { host }) : Promise.resolve([]),
+    ]),
   ]);
+  profile = loadedProfile;
+  const selectedIndex = activeView === "mine"
+    ? indexes.find((index) => index.host === selectedSite && index.id === selectedIndexId) ?? indexes[0]
+    : undefined;
+  const indexPages = selectedIndex
+    ? await listCurrentUserIndexPages(supabase, selectedIndex, page, 20)
+    : undefined;
+  const selectedSystemIndex = activeView === "system"
+    ? systemIndexes.find((index) => index.host === selectedSite && index.id === selectedIndexId) ?? systemIndexes[0]
+    : undefined;
+  const systemIndexPages = selectedSystemIndex
+    ? await listCurrentSystemIndexPages(supabase, selectedSystemIndex.id, page, 20)
+    : undefined;
 
   return (
-    <AccountSettingsShell activeSection="indexes" userProfile={profile}>
+    <AccountSettingsShell activeSection="indexes" contentClassName="account-settings-content--indexes" userProfile={profile}>
       <header className="settings-page-header">
         <h2>Indexes</h2>
         <p>Synced documentation indexes and private reading progress for this account.</p>
@@ -85,9 +110,14 @@ export default async function AccountIndexesPage({ searchParams }: AccountIndexe
                 clearPageProgress: clearCurrentUserPageProgressAction,
                 deleteUploadedIndex: deleteCurrentUserUploadedIndexAction,
                 submitForReview: submitCurrentUserIndexForReviewAction,
+                submitSiteForReview: submitCurrentUserSiteForReviewAction,
                 unlinkIndex: unlinkCurrentUserIndexAction,
               }}
               indexes={indexes}
+              page={page}
+              pages={indexPages}
+              selectedIndexId={selectedIndex?.id ?? selectedIndexId}
+              selectedSite={selectedIndex?.host ?? selectedSite}
             />
           ) : (
             <div className="settings-empty-state">
@@ -112,7 +142,14 @@ export default async function AccountIndexesPage({ searchParams }: AccountIndexe
             </form>
           </div>
           {systemIndexes.length ? (
-            <SystemIndexesBrowser indexes={systemIndexes} />
+            <SystemIndexesBrowser
+              host={host}
+              indexes={systemIndexes}
+              page={page}
+              pages={systemIndexPages}
+              selectedIndexId={selectedSystemIndex?.id ?? selectedIndexId}
+              selectedSite={selectedSystemIndex?.host ?? selectedSite}
+            />
           ) : (
             <div className="settings-empty-state">
               <strong>No system indexes</strong>
@@ -127,4 +164,9 @@ export default async function AccountIndexesPage({ searchParams }: AccountIndexe
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
+}
+
+function positiveInteger(value: string | undefined): number {
+  const number = Number(value);
+  return Number.isInteger(number) && number > 0 ? number : 1;
 }
