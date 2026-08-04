@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   approvePendingSiteReviews,
@@ -195,6 +195,74 @@ describe("index services", () => {
     expect(db.calls.find((call) => call.table === "indexes" && call.method === "upsert")).toMatchObject({
       options: { onConflict: "source,owner_user_id,site_id" },
     });
+  });
+
+  it("rounds fractional viewed height before saving progress to an integer column", async () => {
+    const db = new FakeSupabase();
+    const payload = structuredClone(portablePayload);
+    payload.sites[0].progress![0].viewedHeight = 1357.5;
+    db.queue("indexes", [{ data: { id: "index-1", version: "1000" }, error: null }]);
+    db.queue("index_pages", [{ data: [{ id: "page-1", url: "https://react.dev/learn" }], error: null }]);
+    db.queue("user_indexes", [{ data: { id: "user-index-1" }, error: null }]);
+    db.queue("user_page_progress", [{ data: [], error: null }]);
+
+    await uploadUserIndexes(db as never, "user-1", {
+      schemaVersion: 1,
+      clientUpdatedAt: 1000,
+      payload,
+    });
+
+    const progressUpsert = db.calls.find(
+      (call) => call.table === "user_page_progress" && call.method === "upsert",
+    );
+    expect(progressUpsert?.payload).toEqual([
+      expect.objectContaining({
+        viewed_height: 1358,
+        raw_progress: expect.objectContaining({ viewedHeight: 1357.5 }),
+      }),
+    ]);
+  });
+
+  it("logs Supabase details and safe batch diagnostics when progress upload fails", async () => {
+    const db = new FakeSupabase();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    db.queue("indexes", [{ data: { id: "index-1", version: "1000" }, error: null }]);
+    db.queue("index_pages", [{ data: [{ id: "page-1", url: "https://react.dev/learn" }], error: null }]);
+    db.queue("user_indexes", [{ data: { id: "user-index-1" }, error: null }]);
+    db.queue("user_page_progress", [{
+      data: null,
+      error: {
+        code: "23514",
+        message: "new row violates check constraint",
+        details: "Failing row contains (...) ",
+        hint: null,
+      },
+    }]);
+
+    await expect(uploadUserIndexes(db as never, "user-1", {
+      schemaVersion: 1,
+      clientUpdatedAt: 1000,
+      payload: portablePayload,
+    })).rejects.toThrow("Could not save user page progress.");
+
+    expect(consoleError).toHaveBeenCalledWith("Could not save user page progress", {
+      supabase: {
+        code: "23514",
+        message: "new row violates check constraint",
+        details: "Failing row contains (...) ",
+        hint: null,
+      },
+      batch: {
+        rowCount: 1,
+        progressCount: 1,
+        viewedRangeCount: 1,
+        negativeViewedHeightCount: 0,
+        nonIntegerViewedHeightCount: 0,
+        maxViewedHeight: 250,
+      },
+    });
+
+    consoleError.mockRestore();
   });
 
   it("pulls user indexes as importable portable data", async () => {

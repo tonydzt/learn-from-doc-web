@@ -906,7 +906,7 @@ async function upsertProgressRows(
       title: page.title,
       order: page.order,
       content_height: pagesByUrl.get(page.url)?.contentHeight ?? null,
-      viewed_height: normalizedProgress.viewedHeight,
+      viewed_height: Math.round(normalizedProgress.viewedHeight),
       progress_percent: normalizedProgress.progressPercent,
       raw_progress_version: normalizedProgress.rawProgressVersion,
       raw_progress: normalizedProgress.rawProgress,
@@ -922,6 +922,28 @@ async function upsertProgressRows(
     .upsert(rows, { onConflict: "user_id,user_index_id,url" });
 
   if (error) {
+    console.error("Could not save user page progress", {
+      supabase: {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+      },
+      batch: {
+        rowCount: rows.length,
+        progressCount: rows.filter((row) => row.raw_progress !== null).length,
+        viewedRangeCount: rows.reduce(
+          (count, row) => count + (row.raw_progress?.viewedRanges.length ?? 0),
+          0,
+        ),
+        negativeViewedHeightCount: rows.filter((row) => row.viewed_height < 0).length,
+        nonIntegerViewedHeightCount: rows.filter((row) => !Number.isInteger(row.viewed_height)).length,
+        maxViewedHeight: rows.reduce(
+          (maxViewedHeight, row) => Math.max(maxViewedHeight, row.viewed_height),
+          0,
+        ),
+      },
+    });
     throw new Error("Could not save user page progress.");
   }
 }
