@@ -40,7 +40,7 @@ export default function UpdatesPage() {
                   <p className="update-version">v{update.version}</p>
                   <h2>{update.title}</h2>
                 </div>
-                <time dateTime={update.date}>{update.date}</time>
+                {update.date ? <time dateTime={update.date}>{update.date}</time> : null}
               </div>
               <p>{update.summary}</p>
               <div className="update-groups">

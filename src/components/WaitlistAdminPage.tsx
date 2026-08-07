@@ -1,33 +1,21 @@
 import { waitlistFeatures } from "@/content/waitlist";
 import type { WaitlistSummary } from "@/lib/waitlist";
 
-import { loginWaitlistAdmin, sendWaitlistNotification } from "@/app/admin/waitlist/actions";
+import { sendWaitlistNotification } from "@/app/admin/waitlist/actions";
 
 type WaitlistAdminPageProps = {
-  authenticated: boolean;
   summary?: WaitlistSummary;
 };
 
-export function WaitlistAdminPage({ authenticated, summary }: WaitlistAdminPageProps) {
+export function WaitlistAdminPage({ summary }: WaitlistAdminPageProps) {
   return (
-    <main className="admin-page wrap">
+    <>
       <div className="admin-heading">
         <p className="eyebrow">Private operations</p>
         <h1>Waitlist admin</h1>
       </div>
 
-      {!authenticated ? (
-        <form className="admin-panel admin-login" action={loginWaitlistAdmin}>
-          <label htmlFor="admin-password">Admin password</label>
-          <div>
-            <input id="admin-password" name="password" type="password" required />
-            <button className="button button--primary" type="submit">
-              Sign in
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="admin-grid">
+      <div className="admin-grid">
           <section className="admin-panel" aria-label="Waitlist summary">
             <span className="admin-stat">{summary?.totalSubscribers ?? 0}</span>
             <h2>Total reservations</h2>
@@ -75,8 +63,7 @@ export function WaitlistAdminPage({ authenticated, summary }: WaitlistAdminPageP
               <p>No notifications sent yet.</p>
             )}
           </section>
-        </div>
-      )}
-    </main>
+      </div>
+    </>
   );
 }

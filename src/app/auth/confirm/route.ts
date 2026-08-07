@@ -1,0 +1,25 @@
+import { NextResponse } from "next/server";
+
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get("code");
+
+  if (!code) {
+    return NextResponse.redirect(new URL("/login?message=confirmation-failed", requestUrl));
+  }
+
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      return NextResponse.redirect(new URL("/login?message=confirmation-failed", requestUrl));
+    }
+
+    return NextResponse.redirect(new URL("/account", requestUrl));
+  } catch {
+    return NextResponse.redirect(new URL("/login?message=confirmation-failed", requestUrl));
+  }
+}

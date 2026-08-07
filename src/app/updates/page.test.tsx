@@ -12,29 +12,31 @@ describe("UpdatesPage", () => {
       screen.getByRole("heading", { level: 1, name: /product updates/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /resumable indexing and page-level controls/i }),
+      screen.getByRole("heading", { name: /accounts, server indexes, and broader docs support/i }),
     ).toBeInTheDocument();
 
-    const release = screen.getByRole("article", { name: /v0\.2\.0/i });
-    expect(within(release).getByText(/2026-06-03/i)).toBeInTheDocument();
+    const release = screen.getByRole("article", { name: /v0\.3\.0/i });
+    expect(within(release).queryByRole("time")).toBeNull();
     expect(within(release).getByRole("heading", { name: "Added" })).toBeInTheDocument();
     expect(within(release).getByRole("heading", { name: "Improved" })).toBeInTheDocument();
     expect(within(release).queryByRole("heading", { name: "Fixed" })).toBeNull();
     expect(
-      within(release).getByText(/resume interrupted index builds/i),
+      within(release).getByText(/refresh account permissions/i),
     ).toBeInTheDocument();
   });
 
-  it("keeps the initial public release in version history", () => {
+  it("keeps earlier releases and their dates in version history", () => {
     render(<UpdatesPage />);
 
+    const previousRelease = screen.getByRole("article", { name: /v0\.2\.0/i });
+    expect(within(previousRelease).getByText(/2026-06-03/i)).toBeInTheDocument();
     expect(screen.getByRole("article", { name: /v0\.1\.0/i })).toBeInTheDocument();
   });
 
-  it("keeps installation actions available from the updates page", () => {
+  it("keeps installation actions out of the updates page chrome", () => {
     render(<UpdatesPage />);
 
-    expect(screen.getAllByRole("link", { name: /add to chrome/i })).not.toHaveLength(0);
+    expect(screen.queryByRole("link", { name: /add to chrome/i })).toBeNull();
   });
 
   it("links to the contact page from the primary navigation without exposing the email in the footer", () => {
@@ -52,6 +54,9 @@ describe("UpdatesPage", () => {
         name: /install the latest version from your browser store/i,
       }),
     ).toBeInTheDocument();
+    expect(within(footer).queryByRole("link", { name: /add to chrome/i })).toBeNull();
+    expect(within(footer).queryByRole("link", { name: /^edge$/i })).toBeNull();
+    expect(within(footer).queryByRole("link", { name: /^firefox$/i })).toBeNull();
     expect(within(footer).queryByText(contactEmail)).toBeNull();
     expect(within(footer).queryByRole("link", { name: /contact/i })).toBeNull();
   });

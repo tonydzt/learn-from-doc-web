@@ -14,10 +14,20 @@ import { SiteHeader } from "./SiteHeader";
 import { StoreActions } from "./StoreActions";
 import { WaitlistSignup } from "./WaitlistSignup";
 
-export function LandingPage() {
+type LandingPageProps = {
+  signedIn?: boolean;
+  userProfile?: {
+    nickname: string;
+    avatarInitial: string;
+    avatarBackground: string;
+    avatarColor: string;
+  };
+};
+
+export function LandingPage({ signedIn = false, userProfile }: LandingPageProps) {
   return (
     <div className="site-shell">
-      <SiteHeader homeAnchors />
+      <SiteHeader homeAnchors signedIn={signedIn} userProfile={userProfile} />
 
       <main>
         <section className="hero wrap" aria-label="Introduction">
@@ -115,7 +125,8 @@ export function LandingPage() {
               <p className="eyebrow">Latest update</p>
               <h2 id="latest-update-title">What&apos;s new in v{latestUpdate.version}</h2>
               <p className="update-date">
-                {latestUpdate.date} · {latestUpdate.title}
+                {latestUpdate.date ? `${latestUpdate.date} · ` : ""}
+                {latestUpdate.title}
               </p>
             </div>
             <div className="latest-update-copy">

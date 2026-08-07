@@ -21,8 +21,8 @@ describe("LandingPage", () => {
     const edgeLinks = screen.getAllByRole("link", { name: /^edge$/i });
     const firefoxLinks = screen.getAllByRole("link", { name: /^firefox$/i });
 
-    expect(edgeLinks).toHaveLength(2);
-    expect(firefoxLinks).toHaveLength(2);
+    expect(edgeLinks).toHaveLength(1);
+    expect(firefoxLinks).toHaveLength(1);
     edgeLinks.forEach((link) => {
       expect(link).toHaveAttribute("href", storeLinks.edge);
     });
@@ -39,11 +39,11 @@ describe("LandingPage", () => {
       "/updates",
     );
     expect(
-      screen.getByRole("heading", { name: /what's new in v0\.2\.0/i }),
+      screen.getByRole("heading", { name: /what's new in v0\.3\.0/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/resumable indexing and page-level controls/i)).toBeInTheDocument();
+    expect(screen.getByText(/accounts, server indexes, and broader docs support/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/resume interrupted index builds/i),
+      screen.getByText(/refresh account permissions/i),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /view all updates/i })).toHaveAttribute(
       "href",
@@ -105,10 +105,9 @@ describe("LandingPage", () => {
         name: /make long documentation paths readable over time/i,
       }),
     ).toBeInTheDocument();
-    expect(within(footer).getByRole("link", { name: /add to chrome/i })).toHaveAttribute(
-      "href",
-      storeLinks.chrome,
-    );
+    expect(within(footer).queryByRole("link", { name: /add to chrome/i })).toBeNull();
+    expect(within(footer).queryByRole("link", { name: /^edge$/i })).toBeNull();
+    expect(within(footer).queryByRole("link", { name: /^firefox$/i })).toBeNull();
     expect(within(footer).queryByText(contactEmail)).toBeNull();
     expect(within(footer).queryByRole("link", { name: /contact/i })).toBeNull();
   });

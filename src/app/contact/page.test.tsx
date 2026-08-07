@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { contactEmail, storeLinks } from "@/content/site";
+import { contactEmail } from "@/content/site";
 import ContactPage, { metadata } from "./page";
 
 describe("ContactPage", () => {
@@ -24,10 +24,7 @@ describe("ContactPage", () => {
         .getByRole("navigation", { name: /primary navigation/i })
         .querySelector('a[href="/contact"]'),
     ).not.toBeNull();
-    expect(screen.getAllByRole("link", { name: /add to chrome/i })[0]).toHaveAttribute(
-      "href",
-      storeLinks.chrome,
-    );
+    expect(screen.queryByRole("link", { name: /add to chrome/i })).toBeNull();
   });
 
   it("exports metadata for the contact page", () => {
