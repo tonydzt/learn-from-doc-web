@@ -125,7 +125,8 @@ export function LandingPage({ signedIn = false, userProfile }: LandingPageProps)
               <p className="eyebrow">Latest update</p>
               <h2 id="latest-update-title">What&apos;s new in v{latestUpdate.version}</h2>
               <p className="update-date">
-                {latestUpdate.date} · {latestUpdate.title}
+                {latestUpdate.date ? `${latestUpdate.date} · ` : ""}
+                {latestUpdate.title}
               </p>
             </div>
             <div className="latest-update-copy">

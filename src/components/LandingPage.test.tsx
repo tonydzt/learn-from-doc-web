@@ -39,11 +39,11 @@ describe("LandingPage", () => {
       "/updates",
     );
     expect(
-      screen.getByRole("heading", { name: /what's new in v0\.2\.0/i }),
+      screen.getByRole("heading", { name: /what's new in v0\.3\.0/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/resumable indexing and page-level controls/i)).toBeInTheDocument();
+    expect(screen.getByText(/accounts, server indexes, and broader docs support/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/resume interrupted index builds/i),
+      screen.getByText(/refresh account permissions/i),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /view all updates/i })).toHaveAttribute(
       "href",

@@ -2,13 +2,33 @@ export type UpdateCategory = "Added" | "Improved" | "Fixed";
 
 export type ProductUpdate = {
   version: string;
-  date: string;
+  date?: string;
   title: string;
   summary: string;
   items: Partial<Record<UpdateCategory, string[]>> & { Added: string[] };
 };
 
 export const productUpdates: [ProductUpdate, ...ProductUpdate[]] = [
+  {
+    version: "0.3.0",
+    title: "Accounts, server indexes, and broader docs support",
+    summary:
+      "Version 0.3.0 keeps indexing and reading progress local by default while adding optional account features, permission-gated server index workflows, and dedicated support for more documentation collections.",
+    items: {
+      Added: [
+        "Sign in, sign out, review expired sessions, and refresh account permissions from the optional account area.",
+        "Query, pull, and upload server indexes when the signed-in account has the required permission.",
+        "Pull review indexes when an account has the additional reviewer permission.",
+        "Use dedicated document scopes for MDN Web Docs, Docker Docs, and English GitHub Docs.",
+        "Cover React Learn, Reference, Community, and Blog, plus Playwright guides and APIs for Node.js, Python, Java, .NET, and Playwright MCP.",
+      ],
+      Improved: [
+        "Group indexes by host in the manager and switch between multiple document scopes on the same host.",
+        "Keep local indexing and reading progress available without signing in.",
+        "Confirm before a pulled server index overwrites a local index with the same site ID.",
+      ],
+    },
+  },
   {
     version: "0.2.0",
     date: "2026-06-03",
