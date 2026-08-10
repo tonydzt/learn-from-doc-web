@@ -49,6 +49,10 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
             <strong>Waitlist</strong>
             <small>Reservations and notices</small>
           </Link>
+          <Link href="/admin/site-requests">
+            <strong>Site requests</strong>
+            <small>Requested documentation indexes</small>
+          </Link>
           <Link href="/admin/indexes">
             <strong>System indexes</strong>
             <small>Index snapshots and pages</small>

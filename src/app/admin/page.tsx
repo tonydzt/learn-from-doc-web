@@ -18,8 +18,8 @@ export default async function AdminHomePage() {
       <p className="eyebrow">Operations directory</p>
       <h2 id="admin-workspace-title">Choose a section from the left.</h2>
       <p>
-        Use the admin directory to move between waitlist operations and system
-        documentation index management.
+        Use the admin directory to review site requests, manage the waitlist, and
+        maintain system documentation indexes.
       </p>
     </section>
   );

@@ -43,6 +43,10 @@ describe("AdminLayout", () => {
       "href",
       "/admin/waitlist",
     );
+    expect(screen.getByRole("link", { name: /site requests/i })).toHaveAttribute(
+      "href",
+      "/admin/site-requests",
+    );
     expect(screen.getByRole("link", { name: /system indexes/i })).toHaveAttribute(
       "href",
       "/admin/indexes",

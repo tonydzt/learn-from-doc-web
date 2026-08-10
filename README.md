@@ -73,6 +73,9 @@ on their email initial; existing auth users are backfilled by the same script.
 Account deletion uses Supabase Auth admin APIs, so server environments must also
 set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
 
+Apply `docs/supabase/site-index-requests.sql` in the Supabase SQL editor before
+using the homepage site-index request form or its admin page.
+
 External clients can create a local account session with `POST /api/auth/login`.
 Send JSON `{ "email": "reader@example.com", "password": "password123" }`. A
 successful response includes `accessToken`, `user.id`, `user.email`, optional

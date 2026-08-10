@@ -112,29 +112,20 @@ describe("LandingPage", () => {
     expect(within(footer).queryByRole("link", { name: /contact/i })).toBeNull();
   });
 
-  it("lets visitors reserve future features with their email and selected interests", () => {
+  it("hides the future-feature waitlist and lets visitors request a site index", () => {
     render(<LandingPage />);
 
-    const waitlist = screen.getByRole("region", { name: /reserve future features/i });
+    expect(screen.queryByText(/reserve the next layer/i)).not.toBeInTheDocument();
 
-    expect(
-      within(waitlist).getByRole("heading", { name: /reserve the next layer/i }),
-    ).toBeInTheDocument();
-    expect(
-      within(waitlist).getByRole("checkbox", { name: /user registration and login/i }),
-    ).toBeInTheDocument();
-    expect(
-      within(waitlist).getByRole("checkbox", { name: /personal progress dashboard/i }),
-    ).toBeInTheDocument();
-    expect(
-      within(waitlist).getByRole("checkbox", { name: /cross-device progress sync/i }),
-    ).toBeInTheDocument();
-
-    fireEvent.click(within(waitlist).getByRole("checkbox", { name: /user registration/i }));
-    fireEvent.change(within(waitlist).getByLabelText(/email address/i), {
-      target: { value: "reader@example.com" },
+    const supportedDocs = screen.getByRole("region", {
+      name: /built in where you learn/i,
+    });
+    fireEvent.change(within(supportedDocs).getByLabelText(/site name or docs url/i), {
+      target: { value: "https://vuejs.org/guide/" },
     });
 
-    expect(within(waitlist).getByRole("button", { name: /reserve updates/i })).toBeEnabled();
+    expect(
+      within(supportedDocs).getByRole("button", { name: /request this index/i }),
+    ).toBeEnabled();
   });
 });

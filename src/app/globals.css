@@ -2401,6 +2401,119 @@ figcaption {
   color: var(--ink-soft);
 }
 
+.site-request-card {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(240px, 0.72fr) minmax(420px, 1.28fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: center;
+  overflow: hidden;
+  border-color: rgba(17, 124, 119, 0.28);
+  background:
+    linear-gradient(112deg, rgba(218, 238, 234, 0.82), rgba(251, 248, 241, 0.7) 58%),
+    var(--paper-soft);
+}
+
+.site-request-card .eyebrow {
+  margin-bottom: 0.8rem;
+  color: var(--teal);
+  font-size: 0.72rem;
+}
+
+.site-request-card h3 {
+  max-width: 420px;
+  font-size: clamp(1.8rem, 3vw, 2.55rem);
+  line-height: 1.1;
+}
+
+.site-request-card > div > p:last-child {
+  max-width: 470px;
+  margin: 1rem 0 0;
+}
+
+.site-request-form {
+  display: grid;
+  gap: 0.65rem;
+  border-left: 1px solid rgba(17, 124, 119, 0.2);
+  padding-left: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.site-request-form label {
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.site-request-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.7rem;
+}
+
+.site-request-input-row input {
+  width: 100%;
+  min-height: 3.1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fffdfa;
+  color: var(--ink);
+  font: inherit;
+  padding-inline: 1rem;
+}
+
+.site-request-input-row input::placeholder {
+  color: #879198;
+}
+
+.site-request-input-row .button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.site-request-status {
+  min-height: 1.45rem;
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.site-request-status--success {
+  color: var(--teal-deep);
+  font-weight: 700;
+}
+
+.site-request-status--error {
+  color: #9b3929;
+  font-weight: 700;
+}
+
+.admin-site-requests {
+  display: grid;
+  overflow-x: auto;
+}
+
+.admin-site-request {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(180px, 0.35fr);
+  gap: 1rem;
+  align-items: center;
+  min-width: 570px;
+  border-top: 1px solid var(--line);
+  padding-block: 0.85rem;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.admin-site-request:first-child {
+  border-top: 0;
+}
+
+.admin-site-request strong {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
 .local-section {
   background: var(--ink);
   padding-block: clamp(3.7rem, 7vw, 6.2rem);
@@ -2677,6 +2790,25 @@ figcaption {
   .local-grid,
   .faq-grid {
     grid-template-columns: 1fr;
+  }
+
+  .site-request-card {
+    grid-template-columns: 1fr;
+  }
+
+  .site-request-form {
+    border-top: 1px solid rgba(17, 124, 119, 0.2);
+    border-left: 0;
+    padding-top: 1.5rem;
+    padding-left: 0;
+  }
+
+  .site-request-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .site-request-input-row .button {
+    width: 100%;
   }
 
   .steps li {

@@ -11,8 +11,8 @@ import {
 import { latestUpdate } from "@/content/updates";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
+import { SiteIndexRequestForm } from "./SiteIndexRequestForm";
 import { StoreActions } from "./StoreActions";
-import { WaitlistSignup } from "./WaitlistSignup";
 
 type LandingPageProps = {
   signedIn?: boolean;
@@ -144,23 +144,6 @@ export function LandingPage({ signedIn = false, userProfile }: LandingPageProps)
         </section>
 
         <section
-          className="waitlist-section wrap"
-          aria-label="Reserve future features"
-          id="waitlist"
-        >
-          <div className="waitlist-copy">
-            <p className="eyebrow">Coming next</p>
-            <h2>Reserve the next layer.</h2>
-            <p>
-              The next web app work is moving toward accounts, a personal progress
-              dashboard, and cross-device sync. Pick what matters to you and leave
-              an email for a one-time launch notice.
-            </p>
-          </div>
-          <WaitlistSignup />
-        </section>
-
-        <section
           className="compatibility wrap"
           id="supported-docs"
           aria-labelledby="support-title"
@@ -168,7 +151,7 @@ export function LandingPage({ signedIn = false, userProfile }: LandingPageProps)
         >
           <div className="section-heading">
             <p className="eyebrow">Supported docs</p>
-            <h2 id="support-title">Built in where you learn. Detectable beyond it.</h2>
+            <h2 id="support-title">Built in where you learn. Requested by you.</h2>
           </div>
           <div className="support-columns">
             <div className="support-card support-card--featured">
@@ -193,6 +176,18 @@ export function LandingPage({ signedIn = false, userProfile }: LandingPageProps)
                   <li key={framework}>{framework}</li>
                 ))}
               </ul>
+            </div>
+            <div className="support-card site-request-card">
+              <div>
+                <p className="eyebrow">Missing a site?</p>
+                <h3>Point me to the docs you need next.</h3>
+                <p>
+                  I&apos;m expanding the built-in index catalog based on real reading
+                  paths. Share a documentation site and I&apos;ll use the requests to
+                  prioritize the next adapters.
+                </p>
+              </div>
+              <SiteIndexRequestForm />
             </div>
           </div>
         </section>
